@@ -1,0 +1,56 @@
+[02-Aug-2017 22:00:26 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function mysqli_init() in /home/vksno167mo/public_html/system/database/drivers/mysqli/mysqli_driver.php on line 135
+[02-Aug-2017 22:04:07 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function mysqli_init() in /home/vksno167mo/public_html/system/database/drivers/mysqli/mysqli_driver.php on line 135
+[02-Aug-2017 22:07:35 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function mysqli_init() in /home/vksno167mo/public_html/system/database/drivers/mysqli/mysqli_driver.php on line 135
+[02-Aug-2017 22:24:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:25:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:26:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:27:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:28:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:29:16 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:30:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:31:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:32:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:33:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:34:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:35:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:36:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:37:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:38:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:39:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:40:14 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Site.php on line 49
+[02-Aug-2017 22:57:51 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Rent.php on line 363
+[02-Aug-2017 22:58:09 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Rent.php on line 363
+[02-Aug-2017 22:58:27 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function json_encode() in /home/vksno167mo/public_html/application/controllers/Rent.php on line 175
+[10-Dec-2017 11:20:20 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined method stdClass::price() in /home/vksno167mo/public_html/application/controllers/Report.php on line 277
+[05-Apr-2018 10:40:06 Asia/Ho_Chi_Minh] PHP Warning:  PHP Startup: Unable to load dynamic library '/usr/local/lib/php/extensions/no-debug-non-zts-20131226/imagick.so' - /usr/local/lib/php/extensions/no-debug-non-zts-20131226/imagick.so: cannot open shared object file: No such file or directory in Unknown on line 0
+[05-Apr-2018 10:40:06 Asia/Ho_Chi_Minh] PHP Warning:  Module 'intl' already loaded in Unknown on line 0
+[05-Apr-2018 10:40:06 Asia/Ho_Chi_Minh] PHP Warning:  PHP Startup: Unable to load dynamic library '/usr/local/lib/php/extensions/no-debug-non-zts-20131226/imagick.so' - /usr/local/lib/php/extensions/no-debug-non-zts-20131226/imagick.so: cannot open shared object file: No such file or directory in Unknown on line 0
+[05-Apr-2018 10:40:06 Asia/Ho_Chi_Minh] PHP Warning:  Module 'intl' already loaded in Unknown on line 0
+[21-May-2020 13:01:22 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 13:01:27 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:02:29 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:02:56 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:03:10 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:03:15 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:03:29 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:03:41 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:03:51 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:03:52 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:04:05 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:04:30 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:04:51 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:05:28 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:05:35 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:05:43 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:07:00 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[21-May-2020 15:07:53 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[23-May-2020 19:04:10 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[23-May-2020 19:05:10 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[23-May-2020 19:05:15 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[23-May-2020 19:05:37 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 257
+[25-May-2020 20:08:12 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 263
+[25-May-2020 20:08:31 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 263
+[25-May-2020 20:08:36 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 263
+[30-May-2020 13:08:07 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 263
+[30-May-2020 13:08:15 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 263
+[30-May-2020 13:08:28 Asia/Ho_Chi_Minh] PHP Fatal error:  Call to undefined function fllor() in /home/vksno167mo/public_html/application/models/Rent_model.php on line 263

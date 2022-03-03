@@ -139,14 +139,24 @@ class Rent_model extends MY_Model {
         if (date('H') >= 23) {
             $hourly = 0;
         }
-        $data = array(
-        	'user_id' => $this->session->userdata('user_id'),
-            'room_id' => $room_id,
-            'check_in' => $checkin_time,
-            'human' => 0,
-            'hourly' => $hourly
-        );
-        return $this->save($data);
+        
+        $this->db->from('rent');
+        $this->db->where('user_id', $this->session->userdata('user_id'));
+        $this->db->where('room_id', $room_id);
+        
+        $res = $this->db->get();
+        if ($res->row()) {
+            $data = array(
+            	'user_id' => $this->session->userdata('user_id'),
+                'room_id' => $room_id,
+                'check_in' => $checkin_time,
+                'human' => 0,
+                'hourly' => $hourly
+            );
+            return $this->save($data);
+        }
+        
+        return false;
     }
     
     public function checkout($rent)

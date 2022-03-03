@@ -63,17 +63,21 @@ class Rent extends My_Controller
 	        $this->render('rent/detail', array('room' => $room));
 	    } else {
 	        $rent = $this->rent_model->findOne(array('id' => $room->rent_id, 'user_id' => $this->session->userdata('user_id')));
-	        $tempTotal = $this->rent_model->calculatePrice($room, $rent, array(
-	            'check_in' => $rent->check_in,
-	            'check_out' => time(),
-	            'used_items_price' => $this->rent_item_model->getPrice($rent->id),
-	            'hourly' => $rent->hourly
-	        ));
-	        $tempTotal['notes'] = $rent->notes;
-	        $items = $this->item_model->findAll(array('removed' => 0, 'user_id' => $this->session->userdata('user_id')));
-	        
-	        $free_rooms = $this->room_model->getRooms();
-	        $this->render('rent/view', array('room' => $room, 'items' => $items, 'data' => $tempTotal, 'free_rooms' => $free_rooms));
+	        if ($rent) {
+    	        $tempTotal = $this->rent_model->calculatePrice($room, $rent, array(
+    	            'check_in' => $rent->check_in,
+    	            'check_out' => time(),
+    	            'used_items_price' => $this->rent_item_model->getPrice($rent->id),
+    	            'hourly' => $rent->hourly
+    	        ));
+    	        $tempTotal['notes'] = $rent->notes;
+    	        $items = $this->item_model->findAll(array('removed' => 0, 'user_id' => $this->session->userdata('user_id')));
+    	        
+    	        $free_rooms = $this->room_model->getRooms();
+    	        $this->render('rent/view', array('room' => $room, 'items' => $items, 'data' => $tempTotal, 'free_rooms' => $free_rooms));
+	        } else {
+	            redirect("/site");
+	        }
 	    }
 	}
 	

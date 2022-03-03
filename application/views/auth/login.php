@@ -1,6 +1,6 @@
 <div id="content">
     <div class="panel-heading">
-		<h3 align="center">Đăng nhập vào tài khoản khách sạn</h3>
+		<h3 align="center">Đăng nhập</h3>
 	</div>
 
 	<div align="center">

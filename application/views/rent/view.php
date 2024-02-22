@@ -276,13 +276,13 @@
 				<h4 class="modal-title">Phụ Thu</h4>
 			</div>
 			<div class="modal-body">
-				<?php if ($data['fee_list']): ?>
-					<table class="additional-fee-list" style="width: 100%;">
-						<tr>
-    					<td style="width: 60%;"><input class="txt-note form-control" name="notes" placeholder="Nội dung" style="width: 95%;"/></td>
-    					<td style="width: 30%;"><input class="txt-number form-control" name="amount" placeholder="Số tiền"/></td>
-    					<td style="width: 10%;"><a href="#" style="float: right;" class="btn-save" rent-id="<?php echo $room->rent_id; ?>">Lưu</a></td>
-    					</tr>
+				<table class="additional-fee-list" style="width: 100%;">
+					<tr>
+					<td style="width: 60%;"><input class="txt-note form-control" name="notes" placeholder="Nội dung" style="width: 95%;"/></td>
+					<td style="width: 30%;"><input class="txt-number form-control" name="amount" placeholder="Số tiền"/></td>
+					<td style="width: 10%;"><a href="#" style="float: right;" class="btn-save" rent-id="<?php echo $room->rent_id; ?>">Lưu</a></td>
+					</tr>
+					<?php if ($data['fee_list']): ?>
     					<?php foreach ($data['fee_list'] as $fee): ?>
     					<tr>
     					<td style="width: 60%; padding-top: 10px;"><?php echo $fee->notes ? $fee->notes : 'Phụ Thu'; ?></td>
@@ -290,8 +290,8 @@
     					<td style="width: 10%; padding-top: 10px;"><a href="#" style="float: right; color: red;" class="btn-remove-fee" fee-id="<?php echo $fee->id; ?>" rent-id="<?php echo $room->rent_id; ?>">Xóa</a></td>
     					</tr>
     					<?php endforeach; ?>
-					</table>
-				<?php endif; ?>
+					<?php endif; ?>
+				</table>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>

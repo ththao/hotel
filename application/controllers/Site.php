@@ -6,7 +6,7 @@ class Site extends My_Controller {
     {
         parent::__construct();
 
-        $this->loadModel(array('room_model', 'rent_model', 'rent_item_model', 'rent_additional_fee_modal'));
+        $this->loadModel(array('room_model', 'rent_model', 'rent_item_model', 'rent_additional_fee_model'));
         
 	    if (!$this->checkLoggedIn() && $this->router->method != 'backup') {
             redirect('/auth/login');

@@ -32,8 +32,8 @@
         </tr>
         <?php if ($total_price - $room->prepaid > 0): ?>
             <tr>
-                <td colspan="2"><h4>Thu thêm:</h4></td>
-                <td align="right"><h4><?php echo number_format($total_price - $room->prepaid, 0); ?>vnd</h4></td>
+                <td colspan="2" style="color: green;"><h4>Thu thêm:</h4></td>
+                <td align="right" style="color: green;"><h4><?php echo number_format($total_price - $room->prepaid, 0); ?>vnd</h4></td>
             </tr>
         <?php elseif ($total_price - $room->prepaid == 0): ?>
             <tr>
@@ -41,8 +41,8 @@
             </tr>
         <?php else: ?>
             <tr>
-                <td colspan="2"><h4>Trả lại:</h4></td>
-                <td align="right"><h4><?php echo number_format($room->prepaid - $total_price, 0); ?>vnd</h4></td>
+                <td colspan="2" style="color: red;"><h4>Trả lại:</h4></td>
+                <td align="right" style="color: red;"><h4><?php echo number_format($room->prepaid - $total_price, 0); ?>vnd</h4></td>
             </tr>
         <?php endif; ?>
 	<?php endif; ?>

@@ -164,7 +164,7 @@
                                     </div>
                                     <div class="col-xs-12 room-center room-status no-padding-left no-padding-right">
                                         <a class="view-room" href="/rent/view/<?php echo $room->rent_id; ?>">
-                                            <button class="btn btn-room" style="padding-left: 20px; padding-right: 20px;"><?php echo $room->hourly ? 'GIỜ' : 'NGÀY'; ?></button>
+                                            <button class="btn btn-room" style="padding-left: 20px; padding-right: 20px;"><?php echo $room->hourly == 1 ? 'GIỜ' : ($room->hourly == 2 ? 'ĐÊM' : 'NGÀY'); ?></button>
                                         </a>
                                         <p><strong>Từ: </strong><?php echo date('d-m-Y H:i', $room->check_in); ?></p>
                                     </div>
@@ -192,10 +192,13 @@
                                 </p>
                                 <p><?php echo $room->description; ?></p>
                                 <a href="/site/checkin?room_id=<?php echo $room->id; ?>&hourly=1">
-                                	<button class="btn btn-room" data-toggle="tooltip">Thuê Giờ</button>
+                                	<button class="btn btn-room" data-toggle="tooltip">Giờ</button>
                                 </a>
 								<a href="/site/checkin?room_id=<?php echo $room->id; ?>&hourly=0">
-                                	<button class="btn btn-room" data-toggle="tooltip">Thuê Ngày</button>
+                                	<button class="btn btn-room" data-toggle="tooltip">Ngày</button>
+                                </a>
+                                <a href="/site/checkin?room_id=<?php echo $room->id; ?>&hourly=2">
+                                	<button class="btn btn-room" data-toggle="tooltip">Đêm</button>
                                 </a>
                             </div>
                         <?php endif; ?>

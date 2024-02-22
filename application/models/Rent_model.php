@@ -184,17 +184,8 @@ class Rent_model extends MY_Model {
         $note = '';
         
         if ($rent->negotiate_price) {
-            $data['total_price'] = $rent->negotiate_price + $data['used_items_price'];
+            $data['total_price'] = $rent->negotiate_price + $data['used_items_price'] + $data['additional_fee'];
             $note = 'Giá thỏa thuận ' . $rent->negotiate_price;
-            
-            if ($data['used_items_price']) {
-                $note .= ($note ? ';' : '') . 'Nước uống=' . number_format($data['used_items_price'], 0);
-            }
-            if ($room->extra_price && $rent->human > 0) {
-                $extra_price = $rent->human * $room->extra_price;
-                $note .= ($note ? ';' : '') . 'Phụ thu=' . number_format($extra_price, 0);
-                $data['total_price'] += $extra_price;
-            }
             
         } else {
             $hours = ($data['check_out'] - $data['check_in']) / 3600;
@@ -209,11 +200,11 @@ class Rent_model extends MY_Model {
             
             if ($hours <= 24) {
                 $price = $this->calculateByDays($room, $data, $hours);
-                $data['total_price'] = $price['amount'] + $data['used_items_price'];
+                $data['total_price'] = $price['amount'] + $data['used_items_price'] + $data['additional_fee'];
                 $note = $price['note'];
                 
             } else {
-                $data['total_price'] = $room->daily_price * floor($hours / 24) + $data['used_items_price'];
+                $data['total_price'] = $room->daily_price * floor($hours / 24) + $data['used_items_price'] + $data['additional_fee'];
                 $note = floor($hours / 24) . ' ngày=' . number_format($room->daily_price * floor($hours / 24), 0);
                 
                 $price = $this->calculateByDays($room, $data, $hours - (floor($hours / 24) * 24));
@@ -221,21 +212,29 @@ class Rent_model extends MY_Model {
                 $note .= ($note ? ';' : '') . $price['note'];
             }
             
-            if ($data['used_items_price']) {
-                $note .= ($note ? ';' : '') . 'Nước uống=' . number_format($data['used_items_price'], 0);
-            }
-            if ($room->extra_price && $rent->human > 0) {
-                $extra_price = $rent->human * $room->extra_price;
-                $note .= ($note ? ';' : '') . 'Phụ thu=' . number_format($extra_price, 0);
-                $data['total_price'] += $extra_price;
-            }
-            
             if (intval($room->discount) > 0) {
                 $note .= ($note ? ';' : '') . 'Khuyến mãi=-' . number_format($room->discount * ceil($hours/24), 0);
                 $data['total_price'] -= $room->discount * ceil($hours/24);
             }
         }
+        
+        if ($data['used_items_price']) {
+            $note .= ($note ? ';' : '') . 'Nước uống=' . number_format($data['used_items_price'], 0);
+        }
+        if ($data['additional_fee'] && $data['fee_list']) {
+            foreach ($data['fee_list'] as $fee) {
+                $note .= ($note ? ';' : '') . ($fee->notes ? $fee->notes : 'Phụ Thu') . '=' . number_format($fee->amount, 0);
+            }
+        }
+        if ($room->extra_price && $rent->human > 0) {
+            $extra_price = $rent->human * $room->extra_price;
+            $note .= ($note ? ';' : '') . 'Phụ thu=' . number_format($extra_price, 0);
+            $data['total_price'] += $extra_price;
+        }
+        
         $data['note'] = $note;
+        $data['negotiate_price'] = $rent->negotiate_price;
+        $data['notes'] = $rent->notes;
         return $data;
     }
     

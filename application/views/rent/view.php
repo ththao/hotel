@@ -22,12 +22,12 @@
                 <div class="row paid-detail">
                     <div class="row top-detail">
                         <div class="col-xs-12 col-sm-6 col-md-6 room-start">
-                            <span>Thuê theo <a href="#" class="btn btn-success btn-changeType" rent-id="<?php echo $room->rent_id; ?>"><?php echo $room->hourly ? 'giờ' : 'ngày'; ?></a> lúc:</span><br>
+                            <span>Thuê theo <a href="#" class="btn btn-success btn-changeType" rent-id="<?php echo $room->rent_id; ?>"><?php echo $room->hourly == 1 ? 'giờ' : ($room->hourly == 2 ? 'Đêm' : 'ngày'); ?></a> lúc:</span><br>
                             <strong><?php echo date('d-m-Y H:i', $room->check_in); ?></strong>
                         </div>
                         <div class="col-xs-12 col-sm-6 col-md-6" align="center">
                             <a href="#" class="btn btn-warning btn-notes hide" style="margin-bottom: 5px; margin-top: 5px;">Ghi chú</a>
-                            <a href="#" class="btn btn-warning btn-prepaid hide" style="margin-bottom: 5px; margin-top: 5px;">Trả trước</a>
+                            <a href="#" class="btn btn-warning btn-additional-fee" style="margin-bottom: 5px; margin-top: 5px;">Phụ Thu</a>
                             <a href="#" class="btn btn-warning btn-negotiate-price" style="margin-bottom: 5px; margin-top: 5px;">Ghi chú</a>
                         </div>
                     </div>
@@ -60,7 +60,7 @@
                 <div class="clear-fix"></div>
                 
                 <div class="row end-detail">
-                    <button class="btn btn-default btn-danger btn-cancel hide" rent-id="<?php //echo $room->rent_id; ?>">Hủy Phòng</button>
+                    <button class="btn btn-default btn-danger btn-cancel" rent-id="<?php echo $room->rent_id; ?>">Hủy Phòng</button>
                     <button class="btn btn-default btn-warning btn-changeroom" rent-id="<?php echo $room->rent_id; ?>">Đổi Phòng</button>
                     <button class="btn btn-default btn-primary btn-checkout pull-right" rent-id="<?php echo $room->rent_id; ?>">Trả Phòng</button>
                 </div>
@@ -71,7 +71,7 @@
             <div class="col-xs-12 col-md-4 no-padding-left">
                 <div class="top-definition">
                 	<div class="row">
-                    	<div class="col-xs-3 icon add-human" rent-id="<?php echo $room->rent_id; ?>">
+                    	<div class="col-xs-3 icon add-human hide" rent-id="<?php echo $room->rent_id; ?>">
                             <div class="small-detail human"></div>
                             <div class="clearfix"></div>
                             <div>Phụ Thu</div>
@@ -249,7 +249,7 @@
 			</div>
 			<div class="modal-body">
 				<div class="row" style="padding-bottom: 10px;">
-					<textarea class="txt-note form-control" name="notes" placeholder="Ghi chú" rows="4"><?php echo $room->notes; ?></textarea>
+					<textarea class="txt-note form-control" name="notes" placeholder="Ghi chú" rows="3"><?php echo $room->notes; ?></textarea>
 				</div>
 				<div class="row" style="padding-bottom: 10px;">
 					<input class="txt-number form-control" type="number" name="prepaid" placeholder="Số tiền trả trước/thêm"/>
@@ -260,6 +260,40 @@
 			</div>
 			<div class="modal-footer">
 				<a href="#" class="btn btn-success btn-save" rent-id="<?php echo $room->rent_id; ?>">Lưu</a>
+				<button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="additionalFeeModal" class="modal fade" role="dialog">
+	<div class="modal-dialog" style="width: 350px;">
+
+		<!-- Modal content-->
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Phụ Thu</h4>
+			</div>
+			<div class="modal-body">
+				<?php if ($data['fee_list']): ?>
+					<table class="additional-fee-list" style="width: 100%;">
+						<tr>
+    					<td style="width: 60%;"><input class="txt-note form-control" name="notes" placeholder="Nội dung" style="width: 95%;"/></td>
+    					<td style="width: 30%;"><input class="txt-number form-control" name="amount" placeholder="Số tiền"/></td>
+    					<td style="width: 10%;"><a href="#" style="float: right;" class="btn-save" rent-id="<?php echo $room->rent_id; ?>">Lưu</a></td>
+    					</tr>
+    					<?php foreach ($data['fee_list'] as $fee): ?>
+    					<tr>
+    					<td style="width: 60%; padding-top: 10px;"><?php echo $fee->notes ? $fee->notes : 'Phụ Thu'; ?></td>
+    					<td style="width: 30%; padding-top: 10px;"><?php echo number_format($fee->amount, 0); ?></td>
+    					<td style="width: 10%; padding-top: 10px;"><a href="#" style="float: right; color: red;" class="btn-remove-fee" fee-id="<?php echo $fee->id; ?>" rent-id="<?php echo $room->rent_id; ?>">Xóa</a></td>
+    					</tr>
+    					<?php endforeach; ?>
+					</table>
+				<?php endif; ?>
+			</div>
+			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
 			</div>
 		</div>
@@ -384,8 +418,10 @@ $(document).ready(function() {
                 if (response.status == 1) {
                 	if (response.hourly == 1) {
                     	$(selected).html('giờ');
-                	} else {
+                	} else if (response.hourly == 0) {
                 		$(selected).html('ngày');
+                	} else {
+                		$(selected).html('đêm');
                 	}
                 } else {
                 	window.location.reload();
@@ -538,7 +574,7 @@ $(document).ready(function() {
 		$("#idBikeModal").modal("show");
 	});
 	
-	$('#prepaidModal, #negotiatePriceModal, #idCardModal, #idBikeModal').on('shown.bs.modal', function () {
+	$('#additionalFeeModal, #negotiatePriceModal, #idCardModal, #idBikeModal').on('shown.bs.modal', function () {
 		if ($(this).attr('id') == 'idCardModal') {
 			$(this).find('.txt-number').focus();
 		} else {
@@ -546,10 +582,6 @@ $(document).ready(function() {
 		}
 	});
 	
-	$('#notesModal').on('shown.bs.modal', function () {
-		$(this).find('textarea').first().focus();
-	});
-
 	$(document).on('blur', '#idCardModal .txt-number', function() {
 		var selected = $(this);
 
@@ -584,7 +616,7 @@ $(document).ready(function() {
 		}
 	});
 
-	$(document).on("keypress", "#idCardModal input[type='text'], #idBikeModal input[type='text'], #prepaidModal input[type='text'], #negotiatePriceModal input[type='text'], #idCardReturnModal input[type='text']", function(e) {
+	$(document).on("keypress", "#idCardModal input[type='text'], #idBikeModal input[type='text'], #additionalFeeModal input[type='text'], #negotiatePriceModal input[type='text'], #idCardReturnModal input[type='text']", function(e) {
 		if (e.which == 13) {
 			$(this).parents(".modal-dialog").find(".btn-save").trigger("click");
 		}
@@ -887,43 +919,84 @@ $(document).ready(function() {
         });
 	});
 
-	$(".btn-prepaid").click(function(e) {
+	$(".btn-additional-fee").click(function(e) {
 		e.preventDefault();
 		
 		if ($(this).hasClass("disabled")) {
 			return false;
 		}
 		
-		$("#prepaidModal input[type='text']").val("");
-		$("#prepaidModal").modal("show");
+		$('#additionalFeeModal input[name="amount"]').val('');
+		$('#additionalFeeModal input[name="notes"]').val('');
+		$("#additionalFeeModal").modal("show");
 	});
 
-	$(document).on('click', '#prepaidModal .btn-save', function(e) {
+	$(document).on('click', '#additionalFeeModal .btn-save', function(e) {
 		e.preventDefault();
 		var selected = $(this);
 		
+		var rent_id = $(selected).attr("rent-id");
 		$.ajax({
-            url: "/rent/add_prepaid",
+            url: "/rent/add_fee",
             data: {
-            	rent_id: $(selected).attr("rent-id"),
-            	amount: $('#prepaidModal input[name="amount"]').val()
+            	rent_id: rent_id,
+            	amount: $('#additionalFeeModal input[name="amount"]').val(),
+            	notes: $('#additionalFeeModal input[name="notes"]').val()
             },
             type: 'POST',
             dataType: 'json',
             beforeSend: function() {
-                $(selected).html("Đang lưu ...");
+                $(selected).html("...");
                 setEnable(false);
             },
-            success: function (response) {
-                if (response.status == 1) {
-                	$('.temp-total').html(response.total_html);
-                	$(selected).parents('.modal-dialog').find('.close').trigger('click');
+            success: function (data) {
+                if (data.status == 1) {
+                	$('.temp-total').html(data.total_html);
+                	var html = '<tr>';
+                	html += '<td style="width: 60%; padding-top: 10px;">' + (data.notes ? data.notes : 'Phụ Thu') + '</td>';
+                	html += '<td style="width: 30%; padding-top: 10px;">' + data.amount + '</td>';
+                	html += '<td style="width: 10%; padding-top: 10px;"><a href="#" style="float: right; color: red;" class="btn-remove-fee" rent-id="' + rent_id + '" fee-id="' + data.fee_id + '">Xóa</a></td>';
+                	html += '</tr>';
+                	$('.additional-fee-list').append(html);
+            		$('#additionalFeeModal input[name="amount"]').val('');
+            		$('#additionalFeeModal input[name="notes"]').val('');
                 } else {
             		window.location.reload();
                 }
             },
             complete: function() {
             	$(selected).html("Lưu");
+            	setEnable(true);
+            }
+        });
+	});
+
+	$(document).on('click', '#additionalFeeModal .btn-remove-fee', function(e) {
+		e.preventDefault();
+		var selected = $(this);
+		
+		$.ajax({
+            url: "/rent/remove_fee",
+            data: {
+            	rent_id: $(selected).attr("rent-id"),
+            	fee_id: $(selected).attr("fee-id")
+            },
+            type: 'POST',
+            dataType: 'json',
+            beforeSend: function() {
+                $(selected).html("...");
+                setEnable(false);
+            },
+            success: function (response) {
+                if (response.status == 1) {
+                	$('.temp-total').html(response.total_html);
+                	$(selected).parents('tr').remove();
+                } else {
+            		window.location.reload();
+                }
+            },
+            complete: function() {
+            	$(selected).html("Xóa");
             	setEnable(true);
             }
         });
@@ -936,7 +1009,7 @@ $(document).ready(function() {
 			return false;
 		}
 		
-		$("#negotiatePriceModal input[type='text']").val("");
+		$("#negotiatePriceModal input[name='prepaid']").val("");
 		$("#negotiatePriceModal").modal("show");
 	});
 

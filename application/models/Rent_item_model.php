@@ -12,13 +12,8 @@ class Rent_item_model extends MY_Model {
     
     public function getPrice($rent_id)
     {
-        $query = $this->db->query('SELECT SUM(quantity*unit_price) AS price FROM rent_item WHERE rent_id = ' . $rent_id);
-        $data = $query->result();
-        if (!empty($data)) {
-            $data = $data[0];
-            return $data->price;
-        }
-        
-        return 0;
+        $query = $this->db->select('SUM(quantity*unit_price) AS price')->from('rent_item')->where('rent_id', $rent_id)->get();
+        $data = $query->row();
+        return $data ? $data->price : 0;
     }
 }

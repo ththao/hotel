@@ -15,7 +15,7 @@ class Rent extends My_Controller
 	    	}
         }
 
-        $this->loadModel(array('room_model', 'rent_model', 'item_model', 'rent_item_model', 'rent_receive_model'));
+        $this->loadModel(array('room_model', 'rent_model', 'item_model', 'rent_item_model', 'rent_additional_fee_model', 'rent_receive_model'));
     }
 
 	public function index()
@@ -67,13 +67,12 @@ class Rent extends My_Controller
     	        $tempTotal = $this->rent_model->calculatePrice($room, $rent, array(
     	            'check_in' => $rent->check_in,
     	            'check_out' => time(),
+    	            'additional_fee' => $this->rent_additional_fee_model->getFee($rent->id),
+    	            'fee_list' => $this->rent_additional_fee_model->getFeeList($rent->id),
     	            'used_items_price' => $this->rent_item_model->getPrice($rent->id),
     	            'hourly' => $rent->hourly
     	        ));
-    	        $tempTotal['negotiate_price'] = $rent->negotiate_price;
-    	        $tempTotal['notes'] = $rent->notes;
     	        $items = $this->item_model->findAll(array('removed' => 0, 'user_id' => $this->session->userdata('user_id')));
-    	        //if ($rent->id == 54577) { print_r($rent); die;}
     	        $free_rooms = $this->room_model->getRooms();
     	        
     	        $this->render('rent/view', array('room' => $room, 'items' => $items, 'data' => $tempTotal, 'free_rooms' => $free_rooms));
@@ -97,8 +96,9 @@ class Rent extends My_Controller
 	        exit;
 	    }
 	    
-	    $this->rent_model->update($id, array('hourly' => $rent->hourly ? 0 : 1));
-        echo json_encode(array('status' => 1, 'hourly' => $rent->hourly ? 0 : 1));
+	    $hourly = $rent->hourly == 2 ? 0 : ($rent->hourly == 1 ? 2 : 1);
+	    $this->rent_model->update($id, array('hourly' => $hourly));
+	    echo json_encode(array('status' => 1, 'hourly' => $hourly));
         exit;
 	}
 	
@@ -106,13 +106,13 @@ class Rent extends My_Controller
 	{
 	    $id = $this->input->post('rent_id');
 	    if (!$id) {
-	        echo json_encode(array('status' => 0, 'message' => 'Thông tin thuê phòng không tồn tại hoặc đã hủy.'));
+	        echo json_encode(array('status' => 0, 'message' => 'ThÃ´ng tin thuÃª phÃ²ng khÃ´ng tá»“n táº¡i hoáº·c Ä‘Ã£ há»§y.'));
 	        exit;
 	    }
 	    
 	    $rent = $this->rent_model->findOne(array('id' => $id, 'user_id' => $this->session->userdata('user_id')));
 	    if (empty($rent)) {
-	        echo json_encode(array('status' => 0, 'message' => 'Thông tin thuê phòng không tồn tại hoặc đã hủy.'));
+	        echo json_encode(array('status' => 0, 'message' => 'ThÃ´ng tin thuÃª phÃ²ng khÃ´ng tá»“n táº¡i hoáº·c Ä‘Ã£ há»§y.'));
 	        exit;
 	    }
 	    
@@ -232,60 +232,21 @@ class Rent extends My_Controller
 	        exit();
 	    }
 	    
-	    $data = array(
-	        'rent_id' => $rent_id,
-	        'item_id' => $item_id
-	    );
-	    $rentItem = $this->rent_item_model->findOne($data);
+	    $rentItem = $this->rent_item_model->findOne(['rent_id' => $rent_id, 'item_id' => $item_id]);
 	    if ($rentItem) {
-	        $this->rent_item_model->update($rentItem->id, array('quantity' => $rentItem->quantity + 1));
+	        $this->rent_item_model->update($rentItem->id, ['quantity' => $rentItem->quantity + 1]);
 	    } else {
-	        $data['quantity'] = 1;
-	        $data['unit_price'] = $item->price;
-	        $this->rent_item_model->save($data);
+	        $this->rent_item_model->save(['rent_id' => $rent_id, 'item_id' => $item_id, 'quantity' => 1, 'unit_price' => $item->price]);
 	    }
 	    
-	    $room = $this->room_model->getRoom($rent->id);
-	    $tempTotal = $this->rent_model->calculatePrice($room, $rent, array(
-	        'check_in' => $rent->check_in,
-	        'check_out' => time(),
-	        'used_items_price' => $this->rent_item_model->getPrice($rent->id),
-	        'hourly' => $rent->hourly
-	    ));
-	    $html = $this->load->view('rent/total', array('room' => $room, 'data' => $tempTotal), true);
+	    $res = $this->render_rent_summary($rent);
 	    
 	    echo json_encode(array(
 	        'status' => 1, 'rent_id' => $rent_id, 
 	        'item_id' => $item_id, 'icon_class' => $item->icon_class, 
 	        'name' => $item->name,
-	        'total_html' => $html
+	        'total_html' => $res['total_html']
 	    ));
-	    exit();
-	}
-	
-	public function add_prepaid()
-	{
-	    $rent_id = $this->input->post('rent_id');
-	    $rent = $this->rent_model->findOne(array('id' => $rent_id, 'user_id' => $this->session->userdata('user_id')));
-	     
-	    if (!$rent) {
-	        echo json_encode(array('status' => 0));
-	        exit();
-	    }
-	     
-	    $this->rent_model->update($rent->id, array('prepaid' => $rent->prepaid + floatval($this->input->post('amount'))));
-	    
-	    $room = $this->room_model->getRoom($rent->id);
-	    $tempTotal = $this->rent_model->calculatePrice($room, $rent, array(
-	        'check_in' => $rent->check_in,
-	        'check_out' => time(),
-	        'used_items_price' => $this->rent_item_model->getPrice($rent->id),
-	        'hourly' => $rent->hourly
-	    ));
-	    $tempTotal['notes'] = $rent->notes;
-	    $html = $this->load->view('rent/total', array('room' => $room, 'data' => $tempTotal), true);
-	     
-	    echo json_encode(array('status' => 1, 'total_html' => $html));
 	    exit();
 	}
 	
@@ -307,19 +268,9 @@ class Rent extends My_Controller
 	    $rent->notes = $this->input->post('notes');
 	    $rent->negotiate_price = $this->input->post('negotiate_price');
 	    
-	    $room = $this->room_model->getRoom($rent->id);
-	    $tempTotal = $this->rent_model->calculatePrice($room, $rent, array(
-	        'check_in' => $rent->check_in,
-	        'check_out' => time(),
-	        'used_items_price' => $this->rent_item_model->getPrice($rent->id),
-	        'hourly' => $rent->hourly
-	    ));
-	    $tempTotal['negotiate_price'] = $rent->negotiate_price;
-	    $tempTotal['notes'] = $rent->notes;
-    	
-	    $html = $this->load->view('rent/total', array('room' => $room, 'data' => $tempTotal), true);
+	    $res = $this->render_rent_summary($rent);
 	     
-	    echo json_encode(array('status' => 1, 'total_html' => $html));
+	    echo json_encode(array('status' => 1, 'total_html' => $res['total_html']));
 	    exit();
 	}
 	
@@ -333,19 +284,12 @@ class Rent extends My_Controller
 	        exit();
 	    }
 	    
+	    $rent->notes = $this->input->post('notes');
 	    $this->rent_model->update($rent->id, array('notes' => $this->input->post('notes')));
 	    
-	    $room = $this->room_model->getRoom($rent->id);
-	    $tempTotal = $this->rent_model->calculatePrice($room, $rent, array(
-	        'check_in' => $rent->check_in,
-	        'check_out' => time(),
-	        'used_items_price' => $this->rent_item_model->getPrice($rent->id),
-	        'hourly' => $rent->hourly
-	    ));
-	    $tempTotal['notes'] = $this->input->post('notes');
-	    $html = $this->load->view('rent/total', array('room' => $room, 'data' => $tempTotal), true);
+	    $res = $this->render_rent_summary($rent);
 	    
-	    echo json_encode(array('status' => 1, 'total_html' => $html));
+	    echo json_encode(array('status' => 1, 'total_html' => $res['total_html']));
 	    exit();
 	}
 	
@@ -431,16 +375,9 @@ class Rent extends My_Controller
 	    }
 	    
 	    $rent = $this->rent_model->findOne(array('id' => $this->input->post('rent_id'), 'user_id' => $this->session->userdata('user_id')));
-	    $room = $this->room_model->getRoom($rent->id);
-	    $tempTotal = $this->rent_model->calculatePrice($room, $rent, array(
-	        'check_in' => $rent->check_in,
-	        'check_out' => time(),
-	        'used_items_price' => $this->rent_item_model->getPrice($rent->id),
-	        'hourly' => $rent->hourly
-	    ));
-	    $html = $this->load->view('rent/total', array('room' => $room, 'data' => $tempTotal), true);
+	    $res = $this->render_rent_summary($rent);
 	    
-	    echo json_encode(array('status' => 1, 'total_html' => $html));
+	    echo json_encode(array('status' => 1, 'total_html' => $res['total_html']));
 	    exit();
 	}
 	
@@ -569,7 +506,7 @@ class Rent extends My_Controller
 	        'ử' => 'Ử',
 	        'ữ' => 'Ữ',
 	        'ự' => 'Ự'
-        );
+	    );
 	    $name = ucwords($name);
 	    foreach ($mapping as $search => $replace) {
 	        $name = str_replace(' ' . $search, ' ' . $replace, $name);
@@ -579,6 +516,73 @@ class Rent extends My_Controller
 	    }
 	    
 	    return $name;
+	}
+	
+	public function add_fee()
+	{
+	    $rent = $this->rent_model->findOne(array('id' => $this->input->post('rent_id'), 'user_id' => $this->session->userdata('user_id')));
+	    if (!$rent) {
+	        echo json_encode(array('status' => 0));
+	        exit();
+	    }
+	    
+	    $fee_id = '';
+	    if (floatval($this->input->post('amount')) > 0) {
+    	    $fee_id = $this->db->insert('rent_additional_fee', [
+    	        'rent_id' => $rent->id,
+    	        'amount' => floatval($this->input->post('amount')),
+    	        'notes' => $this->input->post('notes')
+    	    ]);
+	    }
+	    
+	    $res = $this->render_rent_summary($rent);
+	    
+	    echo json_encode([
+	        'status' => 1,
+	        'html' => $res['html'],
+	        'total_html' => $res['total_html'],
+	        'fee_id' => $fee_id,
+	        'amount' => number_format($this->input->post('amount')),
+	        'notes' => $this->input->post('notes')
+	    ]);
+	    exit();
+	}
+	
+	public function remove_fee()
+	{
+	    $rent = $this->rent_model->findOne(array('id' => $this->input->post('rent_id'), 'user_id' => $this->session->userdata('user_id')));
+	    if (!$rent) {
+	        echo json_encode(array('status' => 0));
+	        exit();
+	    }
+	    
+	    $this->db->from('rent_additional_fee')->where('rent_id', $rent->id)->where('id', $this->input->post('fee_id'))->delete();
+	    $res = $this->render_rent_summary($rent);
+	    
+	    echo json_encode(array('status' => 1, 'html' => $res['html'], 'total_html' => $res['total_html']));
+	    exit();
+	}
+	
+	private function render_rent_summary($rent)
+	{
+	    $room = $this->room_model->getRoom($rent->id);
+	    if ($room && $room->rent_id) {
+	        $room->items_received = $this->rent_model->getItemsReceived($room->rent_id);
+	    }
+	    $html = $this->load->view('rent/items', array('room' => $room), true);
+	    
+	    $tempTotal = $this->rent_model->calculatePrice($room, $rent, array(
+	        'check_in' => $rent->check_in,
+	        'check_out' => time(),
+	        'additional_fee' => $this->rent_additional_fee_model->getFee($rent->id),
+	        'fee_list' => $this->rent_additional_fee_model->getFeeList($rent->id),
+	        'used_items_price' => $this->rent_item_model->getPrice($rent->id),
+	        'hourly' => $rent->hourly
+	    ));
+	    
+	    $total_html = $this->load->view('rent/total', array('room' => $room, 'data' => $tempTotal), true);
+	    
+	    return ['html' => $html, 'total_html' => $total_html];
 	}
 	
 	public function add_remove_human()
@@ -593,21 +597,9 @@ class Rent extends My_Controller
 	    $this->rent_model->update($rent->id, array('human' => $human));
 	    $rent->human = $human;
 	    
-	    $room = $this->room_model->getRoom($rent->id);
-	    if ($room && $room->rent_id) {
-	        $room->items_received = $this->rent_model->getItemsReceived($room->rent_id);
-	    }
-	    $html = $this->load->view('rent/items', array('room' => $room), true);
+	    $res = $this->render_rent_summary($rent);
 	    
-	    $tempTotal = $this->rent_model->calculatePrice($room, $rent, array(
-	        'check_in' => $rent->check_in,
-	        'check_out' => time(),
-	        'used_items_price' => $this->rent_item_model->getPrice($rent->id),
-	        'hourly' => $rent->hourly
-	    ));
-	    $total_html = $this->load->view('rent/total', array('room' => $room, 'data' => $tempTotal), true);
-	    
-	    echo json_encode(array('status' => 1, 'html' => $html, 'total_html' => $total_html));
+	    echo json_encode(array('status' => 1, 'html' => $res['html'], 'total_html' => $res['total_html']));
 	    exit();
 	}
 	

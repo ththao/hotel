@@ -161,6 +161,8 @@ class Rent_model extends MY_Model {
         $data = array(
             'check_in' => $rent->check_in,
             'check_out' => time(),
+            'additional_fee' => $this->rent_additional_fee_model->getFee($rent->id),
+            'fee_list' => $this->rent_additional_fee_model->getFeeList($rent->id),
             'used_items_price' => $this->rent_item_model->getPrice($rent->id),
             'hourly' => $rent->hourly
         );
@@ -175,6 +177,7 @@ class Rent_model extends MY_Model {
                 break;
         }
         
+        unset($data['fee_list']);
         $this->update($rent->id, $data);
         
         return true;

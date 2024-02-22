@@ -51,6 +51,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 */
 
 $route['drug/index'] = 'drug/index';
+$route['rent/'] = 'rent/index';
 
 $route['default_controller'] = 'site';
 $route['404_override'] = '';

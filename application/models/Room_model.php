@@ -13,10 +13,10 @@ class Room_model extends MY_Model {
     public function getRooms()
     {
         $sql = '
-            SELECT room.*, rent.id AS rent_id, rent.check_in, rent.check_out, rent.hourly,
+            SELECT room.*, rent.id AS rent_id, rent.check_in, rent.check_out, rent.hourly, rent.negotiate_price,
                 rent.human, rent.used_items_price, rent.total_price, rent.note, rent.prepaid, rent.notes
             FROM room
-            LEFT OUTER JOIN rent ON room_id = room.id AND check_in IS NOT NULL AND (check_out IS NULL OR check_out = "")
+            LEFT OUTER JOIN rent ON rent.user_id = room.user_id AND room_id = room.id AND check_in IS NOT NULL AND (check_out IS NULL OR check_out = "")
             WHERE room.user_id = ' . $this->session->userdata('user_id') . ' AND removed = 0
             ORDER BY room.floor, room.name
         ';
@@ -29,11 +29,31 @@ class Room_model extends MY_Model {
     public function getRoom($rent_id)
     {
         $sql = '
-            SELECT room.*, rent.id AS rent_id, rent.check_in, rent.check_out, rent.hourly,
+            SELECT room.*, rent.id AS rent_id, rent.check_in, rent.check_out, rent.hourly, rent.negotiate_price,
                 rent.human, rent.used_items_price, rent.total_price, rent.note, rent.prepaid, rent.notes
             FROM room
-            LEFT OUTER JOIN rent ON room_id = room.id
+            LEFT OUTER JOIN rent ON rent.user_id = room.user_id AND rent.room_id = room.id
             WHERE room.user_id = ' . $this->session->userdata('user_id') . ' AND removed = 0 AND rent.id = ' . $rent_id . '
+            ORDER BY floor
+        ';
+        $query = $this->db->query($sql);
+        $data = $query->result();
+        
+        if (!empty($data)) {
+            return $data[0];
+        }
+        
+        return array();
+    }
+    
+    public function getRoomByRentId($rent_id)
+    {
+        $sql = '
+            SELECT room.*, rent.id AS rent_id, rent.check_in, rent.check_out, rent.hourly, rent.negotiate_price,
+                rent.human, rent.used_items_price, rent.total_price, rent.note, rent.prepaid, rent.notes
+            FROM room
+            LEFT OUTER JOIN rent ON rent.user_id = room.user_id AND rent.room_id = room.id
+            WHERE removed = 0 AND rent.id = ' . $rent_id . '
             ORDER BY floor
         ';
         $query = $this->db->query($sql);

@@ -70,10 +70,12 @@ class Rent extends My_Controller
     	            'used_items_price' => $this->rent_item_model->getPrice($rent->id),
     	            'hourly' => $rent->hourly
     	        ));
+    	        $tempTotal['negotiate_price'] = $rent->negotiate_price;
     	        $tempTotal['notes'] = $rent->notes;
     	        $items = $this->item_model->findAll(array('removed' => 0, 'user_id' => $this->session->userdata('user_id')));
-    	        
+    	        //if ($rent->id == 54577) { print_r($rent); die;}
     	        $free_rooms = $this->room_model->getRooms();
+    	        
     	        $this->render('rent/view', array('room' => $room, 'items' => $items, 'data' => $tempTotal, 'free_rooms' => $free_rooms));
 	        } else {
 	            redirect("/site");
@@ -287,6 +289,40 @@ class Rent extends My_Controller
 	    exit();
 	}
 	
+	public function save_negotiate_price()
+	{
+	    $rent_id = $this->input->post('rent_id');
+	    $rent = $this->rent_model->findOne(array('id' => $rent_id, 'user_id' => $this->session->userdata('user_id')));
+	     
+	    if (!$rent) {
+	        echo json_encode(array('status' => 0));
+	        exit();
+	    }
+	     
+	    $this->rent_model->update($rent->id, array(
+	        'negotiate_price' => floatval($this->input->post('negotiate_price')),
+	        'prepaid' => $rent->prepaid + floatval($this->input->post('prepaid')),
+	        'notes' => $this->input->post('notes')
+	    ));
+	    $rent->notes = $this->input->post('notes');
+	    $rent->negotiate_price = $this->input->post('negotiate_price');
+	    
+	    $room = $this->room_model->getRoom($rent->id);
+	    $tempTotal = $this->rent_model->calculatePrice($room, $rent, array(
+	        'check_in' => $rent->check_in,
+	        'check_out' => time(),
+	        'used_items_price' => $this->rent_item_model->getPrice($rent->id),
+	        'hourly' => $rent->hourly
+	    ));
+	    $tempTotal['negotiate_price'] = $rent->negotiate_price;
+	    $tempTotal['notes'] = $rent->notes;
+    	
+	    $html = $this->load->view('rent/total', array('room' => $room, 'data' => $tempTotal), true);
+	     
+	    echo json_encode(array('status' => 1, 'total_html' => $html));
+	    exit();
+	}
+	
 	public function update_notes()
 	{
 	    $rent_id = $this->input->post('rent_id');
@@ -450,7 +486,7 @@ class Rent extends My_Controller
                     'type' => $this->input->post('type'),
                     'name' => $this->formatCardName($this->input->post('name')),
                     'number' => strtoupper($this->input->post('number')),
-                    'nation' => $this->formatCardName($this->input->post('nation')),
+                    'nation' => $this->input->post('nation') ? $this->formatCardName($this->input->post('nation')) : 'Kinh',
                     'birthday' => $this->input->post('birthday'),
                     'address' => $this->formatCardName($this->input->post('address')),
                     'gender' => $this->input->post('gender')

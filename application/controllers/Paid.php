@@ -25,7 +25,7 @@ class Paid extends My_Controller {
         $this->db->from('paid');
         $this->db->where('user_id', $this->session->userdata('user_id'));
         $this->db->where('paid_date LIKE "%' . $month . '-' . $year . '"');
-        $this->db->order_by('reason, paid_date');
+        $this->db->order_by('paid_date, reason');
         $query = $this->db->get();
         
         $data = $query->result();

@@ -86,7 +86,7 @@ td {
     				        <?php if ($weekly_week): ?>
             				<?php foreach ($weekly_week as $week): ?>
             					<?php if (isset($weekly_data[$number]) && isset($weekly_data[$number][$position]) && isset($weekly_data[$number][$position][$week]) && $weekly_data[$number][$position][$week]['count']): ?>
-            					<td style="padding: 5px;">
+            					<td style="padding: 5px;" title="<?php echo $weekly_data[$number][$position][$week]['notes']; ?>">
             					    <span title="<?php echo $weekly_data[$number][$position][$week]['notes']; ?>"><?php echo $weekly_data[$number][$position][$week]['count']; ?></span>
         					    </td>
             					<?php else: ?>

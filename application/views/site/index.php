@@ -30,11 +30,12 @@
     <div class="container-fluid">
     	<?php foreach ($floors as $index => $floor): ?>
             <div class="row floor" id="floor<?php echo $index; ?>">
-                <h4 class="floor-title">Tầng <?php echo $index; ?></h4>
-                <?php 
-                    $col_class = count($floor) <= 3 ? 'col-md-4' : 'col-md-6';
-                ?>
-                <?php foreach ($floor as $room): ?>
+                <h4 class="floor-title">Tầng <?php echo $index == 0 ? 'Trệt' : $index; ?></h4>
+                <?php $col_class = count($floor)%3 == 0 ? 'col-md-4' : 'col-md-6'; ?>
+                <?php foreach ($floor as $r_index => $room): ?>
+                    <?php if ($col_class == 'col-md-6' && $r_index%2 == 0) { ?>
+                    <div class="row">
+                    <?php } ?>
                     <div class="<?php echo $col_class; ?> row room-item <?php echo isset($room->check_in) ? 'active' : ''; ?>">
                     
                     	<?php if (isset($room->rent_id) && $room->rent_id): ?>
@@ -159,6 +160,7 @@
                                         <p class="room-number" data-toggle="tooltip" title="<?php echo $room->description; ?>">
                                             <?php echo $room->name; ?>
                                         </p>
+                                        <p><?php echo $room->description; ?></p>
                                     </div>
                                     <div class="col-xs-12 room-center room-status no-padding-left no-padding-right">
                                         <a class="view-room" href="/rent/view/<?php echo $room->rent_id; ?>">
@@ -188,6 +190,7 @@
                                 <p class="room-number" data-toggle="tooltip" title="<?php echo $room->description; ?>">
                                 	<?php echo $room->name; ?>
                                 </p>
+                                <p><?php echo $room->description; ?></p>
                                 <a href="/site/checkin?room_id=<?php echo $room->id; ?>&hourly=1">
                                 	<button class="btn btn-room" data-toggle="tooltip">Thuê Giờ</button>
                                 </a>
@@ -197,6 +200,10 @@
                             </div>
                         <?php endif; ?>
                     </div>
+                    
+                    <?php if ($col_class == 'col-md-6' && $r_index%2 == 1) { ?>
+                    </div>
+                    <?php } ?>
                 <?php endforeach; ?>
             </div>
     	<?php endforeach; ?>

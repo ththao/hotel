@@ -64,6 +64,16 @@ class My_Controller extends CI_Controller
             $this->session->unset_userdata('logged_in');
             delete_cookie('siteAuth');
             return false;
+        } else {
+            $query = $this->db->select('id')->from('remember_users')->where('user_id', $user->id)->where('remember_hash', get_cookie('siteAuth'))->get();
+            $remember = $query->row();
+            if (!$remember) {
+                $this->session->unset_userdata('user_id');
+                $this->session->unset_userdata('fullname');
+                $this->session->unset_userdata('logged_in');
+                delete_cookie('siteAuth');
+                return false;
+            }
         }
         return true;
     }

@@ -97,7 +97,7 @@
                 </div>
                 
                 <div class="row">
-                	<button class="btn btn-default btn-success btn-receipt pull-right" rent-id="<?php echo $room->rent_id; ?>">XUẤT HÓA ĐƠN</button>
+                	<button class="btn btn-default btn-success btn-receipt pull-right hide" rent-id="<?php echo $room->rent_id; ?>">XUẤT HÓA ĐƠN</button>
                 </div>
             </div>
         </div>

@@ -23,8 +23,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = 'http://'.$_SERVER['HTTP_HOST'];
-
+#$config['base_url'] = 'http://'.$_SERVER['HTTP_HOST'];
+$config['base_url'] = 'https://cmd.local';
 /*
 |--------------------------------------------------------------------------
 | Index File
@@ -213,7 +213,7 @@ $config['directory_trigger'] = 'd';
 | your log files will fill up very fast.
 |
 */
-$config['log_threshold'] = 0;
+$config['log_threshold'] = 2;
 
 /*
 |--------------------------------------------------------------------------
@@ -367,7 +367,9 @@ $config['encryption_key'] = '';
 | except for 'cookie_prefix' and 'cookie_httponly', which are ignored here.
 |
 */
-$config['sess_driver'] = 'files';
+$config['sess_driver'] = 'database';
+$config['sess_cookie_name'] = 'ci_session';
+$config['sess_table_name'] = 'ci_sessions';
 $config['sess_cookie_name'] = 'ci_session';
 $config['sess_expiration'] = 86400;
 $config['sess_save_path'] = NULL;

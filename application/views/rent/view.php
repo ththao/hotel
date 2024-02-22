@@ -26,8 +26,9 @@
                             <strong><?php echo date('d-m-Y H:i', $room->check_in); ?></strong>
                         </div>
                         <div class="col-xs-12 col-sm-6 col-md-6" align="center">
-                            <a href="#" class="btn btn-warning btn-notes" style="margin-bottom: 5px; margin-top: 5px;">Ghi chú</a>
-                            <a href="#" class="btn btn-warning btn-prepaid" style="margin-bottom: 5px; margin-top: 5px;">Trả trước</a>
+                            <a href="#" class="btn btn-warning btn-notes hide" style="margin-bottom: 5px; margin-top: 5px;">Ghi chú</a>
+                            <a href="#" class="btn btn-warning btn-prepaid hide" style="margin-bottom: 5px; margin-top: 5px;">Trả trước</a>
+                            <a href="#" class="btn btn-warning btn-negotiate-price" style="margin-bottom: 5px; margin-top: 5px;">Ghi chú</a>
                         </div>
                     </div>
                     
@@ -37,22 +38,6 @@
                     	<div class="col-md-12 received-group">
                             <?php echo $this->load->view('rent/items', array('room' => $room), true); ?>
                         </div>
-                        
-                        <!-- <div class="col-md-6" style="border-left: 1px solid #dedede; padding-left: 20px;">
-                            <ul>
-                            <?php 
-                                /*$bikes = '';
-                                foreach ($room->items_received as $item) {
-                                    if ($item->type == 'bike') {
-                                        echo '<li style="font-size: 18px;">Xe ' . $item->number . ($item->early_return ? (' đã trả lúc ' . date('d-m-Y H:i', $item->early_return)) : '') . '</li>';
-                                    } else if ($item->early_return) {
-                                    	$type = $item->type == 'passport' ? 'Hộ chiếu' : ($item->type == 'id_card' ? 'CMND' : ($item->type == 'driving_license' ? 'Bằng lái' : ($item->type == 'bike' ? 'Xe máy' : ($item->type == 'cavet' ? 'Cà Vẹt' : 'CMND'))));
-                                    	echo '<li style="font-size: 18px;">' . $type . ' ' . $item->name . ' đã trả lúc ' . date('d-m-Y H:i', $item->early_return) . '</li>';
-                                    }
-                                }*/
-                            ?>
-                            </ul>
-                        </div> -->
                     </div>
                     
                     <div class="clearfix"></div>
@@ -75,7 +60,7 @@
                 <div class="clear-fix"></div>
                 
                 <div class="row end-detail">
-                    <button class="btn btn-default btn-danger btn-cancel" rent-id="<?php echo $room->rent_id; ?>">Hủy Phòng</button>
+                    <button class="btn btn-default btn-danger btn-cancel hide" rent-id="<?php //echo $room->rent_id; ?>">Hủy Phòng</button>
                     <button class="btn btn-default btn-warning btn-changeroom" rent-id="<?php echo $room->rent_id; ?>">Đổi Phòng</button>
                     <button class="btn btn-default btn-primary btn-checkout pull-right" rent-id="<?php echo $room->rent_id; ?>">Trả Phòng</button>
                 </div>
@@ -135,7 +120,7 @@
 			</div>
 			<div class="modal-body">
 				<div class="row">
-					<div class="col-xs-6 no-padding-left">
+					<div class="col-xs-3 no-padding-left">
     					<select name="card_type" class="card_type form-control">
     						<option value="id_card">CMND</option>
     						<option value="passport">Hộ Chiếu</option>
@@ -143,9 +128,10 @@
     						<option value="cavet">Cà Vẹt</option>
     					</select>
 					</div>
-					<div class="col-xs-6 no-padding-right">
+					<div class="col-xs-6">
 						<input class="txt-number form-control" type="text" name="number" placeholder="Số" />
 					</div>
+					<div class="col-xs-3 no-padding-right"><a href="#" class="open-scan-btn">Scan</a></div>
 				</div>
 				<br/>
 				<div class="row">
@@ -169,6 +155,13 @@
 					<div class="col-xs-4 no-padding-right">
 						<input class="txt-nation form-control" type="text" name="nation" placeholder="Dân Tộc" />
 					</div>
+				</div>
+				<div clas="row">
+                    <div id="scanner-widget" style="padding-top: 10px;">
+                        <div class="scanner-body">
+                            <div id="datasymbol-barcode-viewport"></div>
+                        </div>
+                    </div>
 				</div>
 			</div>
 			<div class="modal-footer">
@@ -234,7 +227,35 @@
 			</div>
 			<div class="modal-body">
 				<div class="row">
-					<input class="txt-number form-control" type="text" name="amount" />
+					<input class="txt-number form-control" type="text" name="amount" placeholder="Số tiền trả trước"/>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<a href="#" class="btn btn-success btn-save" rent-id="<?php echo $room->rent_id; ?>">Lưu</a>
+				<button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="negotiatePriceModal" class="modal fade" role="dialog">
+	<div class="modal-dialog" style="width: 350px;">
+
+		<!-- Modal content-->
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Ghi chú</h4>
+			</div>
+			<div class="modal-body">
+				<div class="row" style="padding-bottom: 10px;">
+					<textarea class="txt-note form-control" name="notes" placeholder="Ghi chú" rows="4"><?php echo $room->notes; ?></textarea>
+				</div>
+				<div class="row" style="padding-bottom: 10px;">
+					<input class="txt-number form-control" type="number" name="prepaid" placeholder="Số tiền trả trước/thêm"/>
+				</div>
+				<div class="row" style="padding-bottom: 10px;">
+					<input class="txt-number form-control" type="number" name="negotiate_price" placeholder="Giá thỏa thuận" value="<?php echo $room->negotiate_price ? $room->negotiate_price : ''; ?>"/>
 				</div>
 			</div>
 			<div class="modal-footer">
@@ -302,16 +323,18 @@ function setEnable(bool) {
 	if (bool) {
     	$('.add-human, .remove-human, .use-item, .used-item').removeClass("disabled");
     	$(".add-passport, .add-driving-license, .add-id-card, .add-bike").removeClass("disabled");
-    	$(".btn-checkout, .btn-prepaid").removeClass("disabled");
+    	$(".btn-checkout, .btn-prepaid, .btn-negotiate-price").removeClass("disabled");
     	$("#prepaidModal .btn-save, #prepaidModal button").removeClass("disabled");
+    	$("#negotiatePriceModal .btn-save, #negotiatePriceModal button").removeClass("disabled");
     	$("#idBikeModal .btn-save, #idBikeModal button").removeClass("disabled");
     	$("#idCardReturnModal .btn-save, #idCardReturnModal .btn-return, #idCardReturnModal .btn-remove, #idCardReturnModal button").removeClass("disabled");
     	$("#idCardModal .btn-save, #idCardModal button").removeClass("disabled");
 	} else {
     	$('.add-human, .remove-human, .use-item, .used-item').addClass("disabled");
     	$(".add-passport, .add-driving-license, .add-id-card, .add-bike").addClass("disabled");
-    	$(".btn-checkout, .btn-prepaid").addClass("disabled");
+    	$(".btn-checkout, .btn-prepaid, .btn-negotiate-price").addClass("disabled");
     	$("#prepaidModal .btn-save, #prepaidModal button").addClass("disabled");
+    	$("#negotiatePriceModal .btn-save, #negotiatePriceModal button").addClass("disabled");
     	$("#idBikeModal .btn-save, #idBikeModal button").addClass("disabled");
     	$("#idCardReturnModal .btn-save, #idCardReturnModal .btn-return, #idCardReturnModal .btn-remove, #idCardReturnModal button").addClass("disabled");
     	$("#idCardModal .btn-save, #idCardModal button").addClass("disabled");
@@ -515,7 +538,7 @@ $(document).ready(function() {
 		$("#idBikeModal").modal("show");
 	});
 	
-	$('#prepaidModal, #idCardModal, #idBikeModal').on('shown.bs.modal', function () {
+	$('#prepaidModal, #negotiatePriceModal, #idCardModal, #idBikeModal').on('shown.bs.modal', function () {
 		if ($(this).attr('id') == 'idCardModal') {
 			$(this).find('.txt-number').focus();
 		} else {
@@ -561,7 +584,7 @@ $(document).ready(function() {
 		}
 	});
 
-	$(document).on("keypress", "#idCardModal input[type='text'], #idBikeModal input[type='text'], #prepaidModal input[type='text'], #idCardReturnModal input[type='text']", function(e) {
+	$(document).on("keypress", "#idCardModal input[type='text'], #idBikeModal input[type='text'], #prepaidModal input[type='text'], #negotiatePriceModal input[type='text'], #idCardReturnModal input[type='text']", function(e) {
 		if (e.which == 13) {
 			$(this).parents(".modal-dialog").find(".btn-save").trigger("click");
 		}
@@ -906,6 +929,50 @@ $(document).ready(function() {
         });
 	});
 
+	$(".btn-negotiate-price").click(function(e) {
+		e.preventDefault();
+		
+		if ($(this).hasClass("disabled")) {
+			return false;
+		}
+		
+		$("#negotiatePriceModal input[type='text']").val("");
+		$("#negotiatePriceModal").modal("show");
+	});
+
+	$(document).on('click', '#negotiatePriceModal .btn-save', function(e) {
+		e.preventDefault();
+		var selected = $(this);
+		
+		$.ajax({
+            url: "/rent/save_negotiate_price",
+            data: {
+            	rent_id: $(selected).attr("rent-id"),
+            	negotiate_price: $('#negotiatePriceModal input[name="negotiate_price"]').val(),
+            	prepaid: $('#negotiatePriceModal input[name="prepaid"]').val(),
+            	notes: $('#negotiatePriceModal textarea[name="notes"]').val()
+            },
+            type: 'POST',
+            dataType: 'json',
+            beforeSend: function() {
+                $(selected).html("Đang lưu ...");
+                setEnable(false);
+            },
+            success: function (response) {
+                if (response.status == 1) {
+                	$('.temp-total').html(response.total_html);
+                	$(selected).parents('.modal-dialog').find('.close').trigger('click');
+                } else {
+            		window.location.reload();
+                }
+            },
+            complete: function() {
+            	$(selected).html("Lưu");
+            	setEnable(true);
+            }
+        });
+	});
+
 	$(".btn-notes").click(function(e) {
 		e.preventDefault();
 		
@@ -1000,5 +1067,70 @@ $(document).ready(function() {
             }
         });
 	});
+	
+	$(document).on('click', '.open-scan-btn', function(e) {
+		$('#scanner-widget').show();
+		CreateScanner();
+	});
+	
+	$("#idCardModal").on('hide.bs.modal', function(){
+        DSScanner.Destroy();
+    });
 });
+
+function onBarcodeReady (barcodeResult) {
+    
+	for (var i = 0; i < barcodeResult.length; ++i) {
+        var sBarcode = DSScanner.bin2String(barcodeResult[i]);
+        if (sBarcode) {
+        	var cccd = sBarcode.split('|');
+        	
+        	$('#idCardModal .txt-number').val(cccd[0]);
+        	$('#idCardModal .txt-name').val(cccd[2]);
+        	$('#idCardModal .txt-address').val(cccd[5]);
+        	var birthday = cccd[3];
+        	$('#idCardModal .txt-birthday').val(birthday.substring(0,2) + '/' + birthday.substring(2,4) + '/' + birthday.substring(4,8));
+        	$('#idCardModal .txt-gender').val(cccd[4] == 'Nam' ? 1 : 2);
+        	
+            DSScanner.Destroy();
+        	
+        	break;
+        }
+    }
+        
+};
+
+function onError(err) {
+	//console.log(err.message);
+}
+
+function CreateScanner() {
+    var scannerSettings = {
+		scanner: {
+			key: '053-96093989-93891463',
+            frameTimeout:	100,
+            barcodeTimeout:	1000,
+            beep: true,
+		},
+        viewport: {
+            id: 'datasymbol-barcode-viewport'
+        },
+        camera: {
+			facingMode: 'environment'
+        },
+        barcode: {
+            barcodeTypes: ['EAN13', 'UPCA', 'Code128', 'DataMatrix', 'QRCode', 'QRCodeUnrecognized'],
+            bQRCodeFindMicro: false
+        }
+    };
+
+    DSScanner.addEventListener('onError', onError);
+    DSScanner.addEventListener('onBarcode', onBarcodeReady);
+
+    DSScanner.addEventListener('onScannerReady', function () {
+        DSScanner.StartScanner();
+    });
+
+    DSScanner.Create(scannerSettings);
+}
 </script>

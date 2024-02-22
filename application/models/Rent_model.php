@@ -25,7 +25,7 @@ class Rent_model extends MY_Model {
 	    
 	    $query = $this->db->query('
 	        SELECT rent.*, room.name AS room_name 
-	        FROM rent INNER JOIN room ON room.id = rent.room_id 
+	        FROM rent INNER JOIN room ON room.id = rent.room_id AND room.user_id = rent.user_id
 	        WHERE rent.user_id = ' . $this->session->userdata('user_id') . '
     			AND ((rent.check_out >= ' . $start . ' AND rent.check_out <= ' . $end . ') OR rent.check_out IS NULL)
     		ORDER BY rent.check_out IS NULL, rent.check_out'
@@ -97,7 +97,7 @@ class Rent_model extends MY_Model {
             SELECT item.id, item.name, item.icon_class, item.big_icon_class, rent_item.quantity, rent_item.unit_price
             FROM rent_item
             INNER JOIN item ON item.id = rent_item.item_id
-            WHERE rent_item.rent_id = ' . $id;
+            WHERE item.user_id = ' . $this->session->userdata('user_id') . ' AND rent_item.rent_id = ' . $id;
         
         $query = $this->db->query($sql);
         return $query->result();
@@ -140,23 +140,14 @@ class Rent_model extends MY_Model {
             $hourly = 0;
         }
         
-        $this->db->from('rent');
-        $this->db->where('user_id', $this->session->userdata('user_id'));
-        $this->db->where('room_id', $room_id);
-        
-        $res = $this->db->get();
-        if ($res->row()) {
-            $data = array(
-            	'user_id' => $this->session->userdata('user_id'),
-                'room_id' => $room_id,
-                'check_in' => $checkin_time,
-                'human' => 0,
-                'hourly' => $hourly
-            );
-            return $this->save($data);
-        }
-        
-        return false;
+        $data = array(
+        	'user_id' => $this->session->userdata('user_id'),
+            'room_id' => $room_id,
+            'check_in' => $checkin_time,
+            'human' => 0,
+            'hourly' => $hourly
+        );
+        return $this->save($data);
     }
     
     public function checkout($rent)
@@ -191,40 +182,58 @@ class Rent_model extends MY_Model {
     
     public function calculatePrice($room, $rent, $data) {
         $note = '';
-        $hours = ($data['check_out'] - $data['check_in']) / 3600;
         
-        if ($hours > 6 || (date('H', $data['check_out']) >= 1 && date('H', $data['check_out']) <= 5)) {
-            $data['hourly'] = 0;
-        } else {
-            $data['hourly'] = 1;
-        }
-        
-        if ($hours <= 24) {
-            $price = $this->calculateByDays($room, $data, $hours);
-            $data['total_price'] = $price['amount'] + $data['used_items_price'];
-            $note = $price['note'];
+        if ($rent->negotiate_price) {
+            $data['total_price'] = $rent->negotiate_price + $data['used_items_price'];
+            $note = 'Giá thỏa thuận ' . $rent->negotiate_price;
+            
+            if ($data['used_items_price']) {
+                $note .= ($note ? ';' : '') . 'Nước uống=' . number_format($data['used_items_price'], 0);
+            }
+            if ($room->extra_price && $rent->human > 0) {
+                $extra_price = $rent->human * $room->extra_price;
+                $note .= ($note ? ';' : '') . 'Phụ thu=' . number_format($extra_price, 0);
+                $data['total_price'] += $extra_price;
+            }
             
         } else {
-            $data['total_price'] = $room->daily_price * floor($hours / 24) + $data['used_items_price'];
-            $note = floor($hours / 24) . ' ngày=' . number_format($room->daily_price * floor($hours / 24), 0);
+            $hours = ($data['check_out'] - $data['check_in']) / 3600;
             
-            $price = $this->calculateByDays($room, $data, $hours - (floor($hours / 24) * 24));
-            $data['total_price'] += $price['amount'];
-            $note .= ($note ? ';' : '') . $price['note'];
-        }
-        
-        if ($data['used_items_price']) {
-            $note .= ($note ? ';' : '') . 'Nước uống=' . number_format($data['used_items_price'], 0);
-        }
-        if ($room->extra_price && $rent->human > 0) {
-            $extra_price = $rent->human * $room->extra_price;
-            $note .= ($note ? ';' : '') . 'Phụ thu=' . number_format($extra_price, 0);
-            $data['total_price'] += $extra_price;
-        }
-        
-        if (intval($room->discount) > 0) {
-            $note .= ($note ? ';' : '') . 'Khuyến mãi=-' . number_format($room->discount * ceil($hours/24), 0);
-            $data['total_price'] -= $room->discount * ceil($hours/24);
+            $threshold = ceil(($room->night_price - $room->hourly_price) / $room->next_hourly_price) + 1;
+            
+            if ($hours > $threshold || (date('H', $data['check_out']) >= 1 && date('H', $data['check_out']) <= 5)) {
+                $data['hourly'] = 0;
+            } else {
+                $data['hourly'] = 1;
+            }
+            
+            if ($hours <= 24) {
+                $price = $this->calculateByDays($room, $data, $hours);
+                $data['total_price'] = $price['amount'] + $data['used_items_price'];
+                $note = $price['note'];
+                
+            } else {
+                $data['total_price'] = $room->daily_price * floor($hours / 24) + $data['used_items_price'];
+                $note = floor($hours / 24) . ' ngày=' . number_format($room->daily_price * floor($hours / 24), 0);
+                
+                $price = $this->calculateByDays($room, $data, $hours - (floor($hours / 24) * 24));
+                $data['total_price'] += $price['amount'];
+                $note .= ($note ? ';' : '') . $price['note'];
+            }
+            
+            if ($data['used_items_price']) {
+                $note .= ($note ? ';' : '') . 'Nước uống=' . number_format($data['used_items_price'], 0);
+            }
+            if ($room->extra_price && $rent->human > 0) {
+                $extra_price = $rent->human * $room->extra_price;
+                $note .= ($note ? ';' : '') . 'Phụ thu=' . number_format($extra_price, 0);
+                $data['total_price'] += $extra_price;
+            }
+            
+            if (intval($room->discount) > 0) {
+                $note .= ($note ? ';' : '') . 'Khuyến mãi=-' . number_format($room->discount * ceil($hours/24), 0);
+                $data['total_price'] -= $room->discount * ceil($hours/24);
+            }
         }
         $data['note'] = $note;
         return $data;

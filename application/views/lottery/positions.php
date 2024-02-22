@@ -47,36 +47,20 @@ td {
 	
 	<?php if ($data): ?>
 	<table>
-	    <thead><tr><td>Date</td><td>Care</td><td>Matched</td><td>Earn</td><td>Invert Care</td><td>Invert Matched</td><td>Invert Earn</td></ta><td>A</td><td>B</td></tr></thead>
+	    <thead>
+	        <?php for ($i = 0; $i <= 81; $i++): ?>
+	        <td><?php echo $i; ?></td>
+	        <?php endfor; ?>
+	    </thead>
 	    <tbody>
-            <?php $total = 0; ?>
-            <?php $invert_total = 0; ?>
         	<?php foreach ($data as $item): ?>
-        	<?php $total += $item['a'] ? ($channel_id == 1 ? ($item['count']*80 - 5*24) : ($item['count']*80 - 5*30)) : 0; ?>
-        	<?php $invert_total += $item['a'] ? ($channel_id == 1 ? ($item['invert_count']*80 - 5*24) : ($item['invert_count']*80 - 5*30)) : 0; ?>
+        	<?php $digits = str_split(str_replace(' ', '', $item->numbers)); ?>
         	<tr>
-        	    <td><?php echo $item['import_date']; ?></td>
-        	    <td><?php echo $item['potential_numbers']; ?></td>
-        	    <td><?php echo $item['count']; ?></td>
-        	    <td><?php echo $item['a'] ? ($channel_id == 1 ? ($item['count']*80 - 5*24) : ($item['count']*80 - 5*30)) : 0; ?></td>
-        	    <td><?php echo $item['invert_numbers']; ?></td>
-        	    <td><?php echo $item['invert_count']; ?></td>
-        	    <td><?php echo $item['a'] ? ($channel_id == 1 ? ($item['invert_count']*80 - 5*24) : ($item['invert_count']*80 - 5*30)) : 0; ?></td>
-        	    <td><?php echo $item['a']; ?></td>
-        	    <td><?php echo $item['b']; ?></td>
+        	    <?php foreach ($digits as $digit): ?>
+        	    <td><?php echo $digit; ?></td>
+        	    <?php endforeach; ?>
         	</tr>
         	<?php endforeach; ?>
-        	<tr>
-        	    <td>Total</td>
-        	    <td></td>
-        	    <td></td>
-        	    <td><?php echo $total; ?></td>
-        	    <td></td>
-        	    <td></td>
-        	    <td><?php echo $invert_total; ?></td>
-        	    <td></td>
-        	    <td></td>
-        	</tr>
 	    </tbody>
 	</table>
 	<?php endif; ?>

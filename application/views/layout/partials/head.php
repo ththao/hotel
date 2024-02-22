@@ -13,3 +13,4 @@
 <script src="../../../../js/plugins.js" type="text/javascript"></script>
 <script src="../../../../js/script.js" type="text/javascript"></script>
 <script src="../../../../js/notify.js" type="text/javascript"></script>
+<script src="../../../../js/datasymbol-sdk-hlp.min.js" type="text/javascript"></script>

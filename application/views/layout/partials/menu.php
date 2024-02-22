@@ -51,6 +51,15 @@ if ($this->session->userdata('expired_at') > time()) {
             </a>
         </li>
         <li>
+            <a href="/about/index">
+                <div class="left-menu-item open-account">
+                    <i class="menu-icon menu-contact"></i>
+                    <div class="clearfix"></div>
+                    <p class="">HƯỚNG DẪN</p>
+                </div>
+            </a>
+        </li>
+        <li>
             <a href="/auth/logout">
                 <div class="left-menu-item open-account">
                     <i class="menu-icon menu-logout"></i>

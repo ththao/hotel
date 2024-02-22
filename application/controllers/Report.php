@@ -97,7 +97,7 @@ class Report extends My_Controller {
 	    }
 	    
 	    $query = $this->db->query('
-	        SELECT rent.id AS rent_id, room.name AS room_name, room.hourly_price, room.night_price, rent.check_in
+	        SELECT rent.id AS rent_id, rent.hourly, room.name AS room_name, room.hourly_price, room.night_price, rent.check_in
             FROM rent
             INNER JOIN room ON room.id = rent.room_id
 	        WHERE rent.user_id = ' . $this->session->userdata('user_id') . ' 
@@ -115,7 +115,7 @@ class Report extends My_Controller {
                 ));
                 
                 if ($received_items) {
-                    $night = rand(0, 1);
+                    $night = $row->hourly ? 0 : 1;
                     foreach ($received_items as $received_item) {
                         $fields = array(
                             'user_id' => $this->session->userdata('user_id'),
@@ -137,11 +137,11 @@ class Report extends My_Controller {
         	                }
         	                $this->report_model->update($report_item->id, $fields);
     	                } else {
-    	                    if (time() >= strtotime($year . '-' . $month . '-' . $date . ' 20:30')) {
+    	                    //if (time() >= strtotime($year . '-' . $month . '-' . $date . ' 20:30')) {
         	                    $fields['night'] = $night;
         	                    $fields = $this->generatePrice($fields, $row->night_price, $row->hourly_price);
         	                    $this->report_model->save($fields);
-    	                    }
+    	                    //}
     	                }
                     }
 	            }

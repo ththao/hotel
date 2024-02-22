@@ -157,10 +157,14 @@ class Auth extends My_Controller
 	            if ($user) {
 	                if (!$user->password) {
 	                	$this->user_model->update($user->id, array('password' => md5($_POST['new_password'])));
+	                	
+	                	$this->db->where('user_id', $user->id)->delete('remember_users');
 	                    $message = 'Đã cập nhật mật khẩu';
 	                } else {
 	                    if ($user->password == md5($_POST['old_password'])) {
 	                        $this->user_model->update($user->id, array('password' => md5($_POST['new_password'])));
+	                        
+	                        $this->db->where('user_id', $user->id)->delete('remember_users');
 	                        $message = 'Đã cập nhật mật khẩu';
 	                    } else {
 	                        $err_message = 'Mật khẩu cũ không khớp';

@@ -6,7 +6,7 @@ class Site extends My_Controller {
     {
         parent::__construct();
 
-        $this->loadModel(array('room_model', 'rent_model', 'rent_item_model'));
+        $this->loadModel(array('room_model', 'rent_model', 'rent_item_model', 'rent_additional_fee_modal'));
         
 	    if (!$this->checkLoggedIn() && $this->router->method != 'backup') {
             redirect('/auth/login');
@@ -87,6 +87,8 @@ class Site extends My_Controller {
                 	    $tempTotal = $this->rent_model->calculatePrice($room, $rent, array(
                 	        'check_in' => $rent->check_in,
                 	        'check_out' => time(),
+                	        'additional_fee' => $this->rent_additional_fee_model->getFee($rent->id),
+                	        'fee_list' => $this->rent_additional_fee_model->getFeeList($rent->id),
                 	        'used_items_price' => $this->rent_item_model->getPrice($rent->id),
                 	        'hourly' => $rent->hourly
                 	    ));

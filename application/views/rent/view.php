@@ -395,6 +395,30 @@ $(document).ready(function() {
 	setInterval(function(){
 		checkRoomStatus()
 	}, 60000);
+	
+	
+    $("#additionalFeeModal .txt-note").autocomplete({
+    	source: [
+    		'Thêm người',
+    		'Sau 23h',
+    		'Giặt quần áo',
+    		'Phụ thu dịch vụ'
+    	]
+    });
+    $("#additionalFeeModal .txt-number").autocomplete({
+    	source: [
+    		'10000',
+    		'20000',
+    		'30000',
+    		'40000',
+    		'50000',
+    		'60000',
+    		'70000',
+    		'80000',
+    		'90000',
+    		'100000',
+    	]
+    });
 
 	$(document).on('click', '.btn-changeType', function(e) {
 		e.preventDefault();

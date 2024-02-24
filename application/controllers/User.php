@@ -22,7 +22,7 @@ class User extends My_Controller {
 	    	}
         }
         
-        if ($this->session->userdata('user_id') != 1) {
+        if ($this->session->userdata('user_id') != 1 && $this->router->method != 'settings') {
 	    	if ($this->input->is_ajax_request()) {
 	    		echo json_encode(array('status' => 0));
 	    	} else {
@@ -57,6 +57,28 @@ class User extends My_Controller {
         
         $user = $this->user_model->findOne(array('id' => $id));
         $this->render('user/update', array('user' => $user));
+    }
+    
+    public function settings()
+    {
+        if (isset($_POST) && !empty($_POST)) {
+            $this->db->where('user_id', $this->session->userdata('user_id'));
+            $this->db->update('user_settings', [
+                'half_hour_minutes' => intval($this->input->post('half_hour_minutes')) > 0 ? intval($this->input->post('half_hour_minutes')) : 10,
+                'full_hour_minutes' => intval($this->input->post('full_hour_minutes')) > 0 ? intval($this->input->post('full_hour_minutes')) : 30,
+                'hourly_hours' => intval($this->input->post('hourly_hours')) > 0 ? intval($this->input->post('hourly_hours')) : 6,
+                'full_day_hours' => intval($this->input->post('full_day_hours')) > 0 ? intval($this->input->post('full_day_hours')) : 18
+            ]);
+        }
+        
+        $query = $this->db->select('*')->from('user_settings')->where('user_id', $this->session->userdata('user_id'))->get();
+        $settings = $query->row();
+        
+        if (!$settings) {
+            $this->db->insert('user_settings', ['user_id' => $this->session->userdata('user_id')]);
+        }
+        
+        $this->render('user/settings', array('settings' => $settings));
     }
     
     public function create()

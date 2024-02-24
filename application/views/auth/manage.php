@@ -28,14 +28,15 @@
 		<?php endif; ?>
 		
         <div class="row col-md-12 floor">
-            <a href="/auth/password" class="col-xs-12 col-md-6 manage-item">ĐỔI MẬT KHẨU</a>
-            <a href="/auth/admin_password" class="col-xs-12 col-md-6 manage-item">MẬT KHẨU ADMIN</a>
+            <a href="/auth/password" class="col-xs-12 col-md-4 manage-item">ĐỔI MẬT KHẨU</a>
+        	<a href="/user/settings" class="col-xs-12 col-md-4 manage-item">CÀI ĐẶT</a>
+            <a href="/auth/admin_password" class="col-xs-12 col-md-4 manage-item">MẬT KHẨU ADMIN</a>
 		</div>
 		
 		<?php if ($this->session->has_userdata('user_id') && $this->session->userdata('user_id') == 1 && $this->session->userdata('logged_in') == 1): ?>
         	<div class="row col-md-12 floor">
-            	<a href="/remember" class="col-xs-12 col-md-6 manage-item">QUẢN LÝ ĐĂNG NHẬP</a>
-            	<a href="/user" class="col-xs-12 col-md-6 manage-item">QUẢN LÝ ACCOUNTS</a>
+            	<a href="/remember" class="col-xs-12 col-md-4 manage-item">QUẢN LÝ ĐĂNG NHẬP</a>
+            	<a href="/user" class="col-xs-12 col-md-4 manage-item">QUẢN LÝ ACCOUNTS</a>
         	</div>
         <?php endif; ?>
     </div>

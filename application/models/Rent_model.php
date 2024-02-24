@@ -185,10 +185,13 @@ class Rent_model extends MY_Model {
     
     public function calculatePrice($room, $rent, $data) {
         $note = '';
-        
         if ($rent->negotiate_price) {
-            $data['total_price'] = $rent->negotiate_price + $data['used_items_price'] + $data['additional_fee'];
+            $data['total_price'] = $rent->negotiate_price + $data['used_items_price'] + $data['additional_fee'] - $rent->discount;
             $note = 'Giá thỏa thuận ' . $rent->negotiate_price;
+            
+            if (intval($rent->discount) > 0) {
+                $note .= ($note ? ';' : '') . 'Giảm giá=-' . number_format($rent->discount, 0);
+            }
             
         } else {
             $hours = ($data['check_out'] - $data['check_in']) / 3600;
@@ -203,11 +206,11 @@ class Rent_model extends MY_Model {
             
             if ($hours <= 24) {
                 $price = $this->calculateByDays($room, $data, $hours);
-                $data['total_price'] = $price['amount'] + $data['used_items_price'] + $data['additional_fee'];
+                $data['total_price'] = $price['amount'] + $data['used_items_price'] + $data['additional_fee'] - $rent->discount;
                 $note = $price['note'];
                 
             } else {
-                $data['total_price'] = $room->daily_price * floor($hours / 24) + $data['used_items_price'] + $data['additional_fee'];
+                $data['total_price'] = $room->daily_price * floor($hours / 24) + $data['used_items_price'] + $data['additional_fee'] - $rent->discount;
                 $note = floor($hours / 24) . ' ngày=' . number_format($room->daily_price * floor($hours / 24), 0);
                 
                 $price = $this->calculateByDays($room, $data, $hours - (floor($hours / 24) * 24));
@@ -215,9 +218,13 @@ class Rent_model extends MY_Model {
                 $note .= ($note ? ';' : '') . $price['note'];
             }
             
-            if (intval($room->discount) > 0) {
-                $note .= ($note ? ';' : '') . 'Khuyến mãi=-' . number_format($room->discount * ceil($hours/24), 0);
-                $data['total_price'] -= $room->discount * ceil($hours/24);
+            if (intval($rent->discount) > 0) {
+                $note .= ($note ? ';' : '') . 'Giảm giá=-' . number_format($rent->discount, 0);
+            } else {
+                if (intval($room->discount) > 0) {
+                    $note .= ($note ? ';' : '') . 'Khuyến mãi=-' . number_format($room->discount * ceil($hours/24), 0);
+                    $data['total_price'] -= $room->discount * ceil($hours/24);
+                }
             }
         }
         
@@ -235,6 +242,7 @@ class Rent_model extends MY_Model {
             $data['total_price'] += $extra_price;
         }
         
+        $data['discount'] = $rent->discount;
         $data['note'] = $note;
         $data['negotiate_price'] = $rent->negotiate_price;
         $data['notes'] = $rent->notes;
@@ -242,80 +250,67 @@ class Rent_model extends MY_Model {
     }
     
     private function calculateByDays($room, $data, $hours) {
-        if ($hours <= 6) {
+        $query = $this->db->select('*')->from('user_settings')->where('user_id', $room->user_id)->get();
+        $settings = $query->row();
+        
+        if (!$settings) {
+            $query = $this->db->select('*')->from('user_settings')->where('user_id', 1)->get();
+            $settings = $query->row();
+        }
+        
+        if ($hours <= $settings->hourly_hours) {
             if ($data['check_out'] > strtotime(date('Y-m-d 00:01')) && $data['check_out'] < strtotime(date('Y-m-d 05:00'))) {
-                return array(
-                    'amount' => $room->night_price,
-                    'note' => 'Qua đêm=' . number_format($room->night_price, 0)
-                );
+                return ['amount' => $room->night_price, 'note' => 'Qua đêm=' . number_format($room->night_price, 0)];
             } else if ($data['check_in'] > strtotime(date('Y-m-d 00:01')) && $data['check_in'] < strtotime(date('Y-m-d 04:00'))) {
-                return array(
-                    'amount' => $room->night_price,
-                    'note' => 'Qua đêm=' . number_format($room->night_price, 0)
-                );
+                return ['amount' => $room->night_price, 'note' => 'Qua đêm=' . number_format($room->night_price, 0)];
             } else {
-                return $this->calculateByHours($room, $hours);
+                return $this->calculateByHours($room, $hours, $settings);
             }
             
-        } else if ($hours <= 14 && time() <= strtotime(date('Y-m-d 12:30'))) {
-            return array(
-                'amount' => $room->night_price,
-                'note' => 'Nửa ngày=' . number_format($room->night_price, 0)
-            );
+        } else if ($hours <= $settings->half_day_hours && time() <= strtotime(date('Y-m-d 12:30'))) {
+            return ['amount' => $room->night_price, 'note' => 'Nửa ngày=' . number_format($room->night_price, 0)];
             
-        }  else if ($hours <= 14 && time() > strtotime(date('Y-m-d 12:30')) && (strtotime(date('Y-m-d 12:00')) - $data['check_in'])/3600 < 7) {
-            return array(
-                'amount' => $room->night_price,
-                'note' => 'Nửa ngày=' . number_format($room->night_price, 0)
-            );
+        }  else if ($hours <= $settings->half_day_hours && time() > strtotime(date('Y-m-d 12:30')) && (strtotime(date('Y-m-d 12:00')) - $data['check_in'])/3600 < 7) {
+            return ['amount' => $room->night_price, 'note' => 'Nửa ngày=' . number_format($room->night_price, 0)];
             
-        } else if ($hours <= 18) {
+        } else if ($hours <= $settings->full_day_hours) {
             $price = $room->night_price;
             $note = 'Nửa ngày=' . number_format($room->night_price, 0);
             
             if ($data['check_out'] > strtotime(date('Y-m-d 12:30'))) {
                 $mod_hours = ($data['check_out'] - strtotime(date('Y-m-d 12:00')))/3600;
                 
-                if ($mod_hours - floor($mod_hours) > 0.5) {
+                if ($mod_hours - floor($mod_hours) > ($settings->full_hour_minutes / 60)) {
                     $price += ceil($mod_hours) * $room->next_hourly_price;
-                } else if ($mod_hours - floor($mod_hours) > 0.15) {
+                } else if ($mod_hours - floor($mod_hours) > ($settings->half_hour_minutes / 60)) {
                     $price += (floor($mod_hours) * $room->next_hourly_price + $room->next_hourly_price / 2);
                 } else {
                     $price += floor($mod_hours) * $room->next_hourly_price;
                 }
                 
                 if ($price > $room->daily_price) {
-                    return array(
-                        'amount' => $room->daily_price,
-                        'note' => number_format($hours, 1) . ' giờ=' . number_format($room->daily_price, 0)
-                    );
+                    return ['amount' => $room->daily_price, 'note' => number_format($hours, 1) . ' giờ=' . number_format($room->daily_price, 0)];
                 } else {
                     $note .= ($note ? ';' : '') . number_format($mod_hours, 1) . ' giờ tiếp theo (tính từ 12h)=' . number_format($price - $room->night_price, 0);
                 }
             }
-            return array(
-                'amount' => $price,
-                'note' => $note
-            );
+            return ['amount' => $price, 'note' => $note];
             
         } else if ($hours <= 24) {
-            return array(
-                'amount' => $room->daily_price,
-                'note' => number_format($hours, 1) . ' giờ=' . number_format($room->daily_price, 0)
-            );
+            return ['amount' => $room->daily_price, 'note' => number_format($hours, 1) . ' giờ=' . number_format($room->daily_price, 0)];
         }
     }
     
-    private function calculateByHours($room, $hours) {
+    private function calculateByHours($room, $hours, $settings) {
         $price = $room->hourly_price;
         $note = 'Giờ đầu=' . number_format($room->hourly_price, 0);
         if ($hours > 1) {
             if (floor($hours - 1) > 0) {
                 $price += $room->next_hourly_price * floor($hours - 1);
             }
-            if ($hours - floor($hours) > 0.5) {
+            if ($hours - floor($hours) > ($settings->full_hour_minutes / 60)) {
                 $price += $room->next_hourly_price;
-            } else if ($hours - floor($hours) > 0.15) {
+            } else if ($hours - floor($hours) > ($settings->half_hour_minutes / 60)) {
                 $price += $room->next_hourly_price/2;
             }
             $note .= ($note ? ';' : '') . number_format($hours - 1, 1) . ' giờ tiếp theo=' . number_format($price - $room->hourly_price, 0);
@@ -323,9 +318,9 @@ class Rent_model extends MY_Model {
         
         if ($price > $room->night_price) {
             $note = number_format($price, 1) . ' giờ=' . number_format($room->night_price, 0);
-            return array('amount' => $room->night_price, 'note' => $note);
+            return ['amount' => $room->night_price, 'note' => $note];
         } else {
-            return array('amount' => $price, 'note' => $note);
+            return ['amount' => $price, 'note' => $note];
         }
     }
 }

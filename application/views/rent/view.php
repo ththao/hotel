@@ -60,7 +60,9 @@
                 <div class="clear-fix"></div>
                 
                 <div class="row end-detail">
+                	<?php if (!in_array($this->session->userdata('user_id'), [5])): ?>
                     <button class="btn btn-default btn-danger btn-cancel" rent-id="<?php echo $room->rent_id; ?>">Hủy Phòng</button>
+                    <?php endif; ?>
                     <button class="btn btn-default btn-warning btn-changeroom" rent-id="<?php echo $room->rent_id; ?>">Đổi Phòng</button>
                     <button class="btn btn-default btn-primary btn-checkout pull-right" rent-id="<?php echo $room->rent_id; ?>">Trả Phòng</button>
                 </div>
@@ -250,6 +252,9 @@
 			<div class="modal-body">
 				<div class="row" style="padding-bottom: 10px;">
 					<textarea class="txt-note form-control" name="notes" placeholder="Ghi chú" rows="3"><?php echo $room->notes; ?></textarea>
+				</div>
+				<div class="row" style="padding-bottom: 10px;">
+					<input class="txt-number form-control" type="number" name="discount" placeholder="Giảm giá"/>
 				</div>
 				<div class="row" style="padding-bottom: 10px;">
 					<input class="txt-number form-control" type="number" name="prepaid" placeholder="Số tiền trả trước/thêm"/>
@@ -1046,6 +1051,7 @@ $(document).ready(function() {
             data: {
             	rent_id: $(selected).attr("rent-id"),
             	negotiate_price: $('#negotiatePriceModal input[name="negotiate_price"]').val(),
+            	discount: $('#negotiatePriceModal input[name="discount"]').val(),
             	prepaid: $('#negotiatePriceModal input[name="prepaid"]').val(),
             	notes: $('#negotiatePriceModal textarea[name="notes"]').val()
             },

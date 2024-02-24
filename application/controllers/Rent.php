@@ -261,12 +261,14 @@ class Rent extends My_Controller
 	    }
 	     
 	    $this->rent_model->update($rent->id, array(
+	        'discount' => floatval($this->input->post('discount')),
 	        'negotiate_price' => floatval($this->input->post('negotiate_price')),
 	        'prepaid' => $rent->prepaid + floatval($this->input->post('prepaid')),
 	        'notes' => $this->input->post('notes')
 	    ));
 	    $rent->notes = $this->input->post('notes');
-	    $rent->negotiate_price = $this->input->post('negotiate_price');
+	    $rent->negotiate_price = floatval($this->input->post('negotiate_price'));
+	    $rent->discount = floatval($this->input->post('discount'));
 	    
 	    $res = $this->render_rent_summary($rent);
 	     

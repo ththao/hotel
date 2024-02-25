@@ -32,8 +32,8 @@
                             <p><?php echo number_format($room->hourly_price, 0); ?>vnd / Giờ (Giờ tiếp theo <?php echo number_format($room->next_hourly_price, 0); ?>vnd / Giờ)</p>
                             <p class="no-marginbottom"><?php echo number_format($room->night_price, 0); ?>vnd / Đêm</p>
                             <p class="no-marginbottom"><?php echo number_format($room->daily_price, 0); ?>vnd / Ngày</p>
-                            <p class="no-marginbottom">Phụ thu <?php echo number_format($room->extra_price, 0); ?>vnd</p>
-                            <p class="no-marginbottom">Giảm giá <?php echo $room->discount ? number_format($room->discount, 0) : '0'; ?>vnd</p>
+                            <p class="no-marginbottom hide">Phụ thu <?php echo number_format($room->extra_price, 0); ?>vnd</p>
+                            <p class="no-marginbottom hide">Giảm giá <?php echo $room->discount ? number_format($room->discount, 0) : '0'; ?>vnd</p>
                         </td>
                         <td><?php echo $room->removed ? 'Bảo trì' : 'Đang hoạt động'; ?></td>
                         <td align="right">

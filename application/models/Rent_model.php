@@ -239,7 +239,7 @@ class Rent_model extends MY_Model {
         } else {
             
             // Hoàng Vy, 158A
-            if (in_array($this->session->userdata('user_id'), [3, 7])) {
+            if (in_array($room->user_id, [3, 7])) {
                 $check_in = $data['check_in'];
                 while (true) {
                     $next_day_checkout = strtotime(date('Y-m-d', strtotime(date('Y-m-d', $check_in) . '+1 day')) . ' 12:00');
@@ -249,10 +249,10 @@ class Rent_model extends MY_Model {
                         $note .= ($note ? ';' : '') . $price['note'];
                         
                         if (($data['check_out'] - $next_day_checkout) > 600 && ($data['check_out'] - $next_day_checkout) <= 3600) {
-                            if ($this->session->userdata('user_id') == 7) {
+                            if ($room->user_id == 7) {
                                 $data['total_price'] += 30000;
                                 $note .= ($note ? ';' : '') . 'Quá giờ=30,000';
-                            } else if ($this->session->userdata('user_id') == 3) {
+                            } else if ($room->user_id == 3) {
                                 $data['total_price'] += 20000;
                                 $note .= ($note ? ';' : '') . 'Quá giờ=20,000';
                             }

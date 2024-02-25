@@ -30,10 +30,17 @@
                     <label for="room" class="col-md-3 control-label">Tầng</label>
                     <div class="col-md-9">
                     	<select class="form-control" name="floor">
+                    		<option value="1" <?php echo $room->floor == 0 ? 'selected' : ''; ?>>Tầng Trệt</option>
                     		<option value="1" <?php echo $room->floor == 1 ? 'selected' : ''; ?>>Tầng 1</option>
                     		<option value="2" <?php echo $room->floor == 2 ? 'selected' : ''; ?>>Tầng 2</option>
                     		<option value="3" <?php echo $room->floor == 3 ? 'selected' : ''; ?>>Tầng 3</option>
                     		<option value="4" <?php echo $room->floor == 4 ? 'selected' : ''; ?>>Tầng 4</option>
+                    		<option value="4" <?php echo $room->floor == 5 ? 'selected' : ''; ?>>Tầng 5</option>
+                    		<option value="4" <?php echo $room->floor == 6 ? 'selected' : ''; ?>>Tầng 6</option>
+                    		<option value="4" <?php echo $room->floor == 7 ? 'selected' : ''; ?>>Tầng 7</option>
+                    		<option value="4" <?php echo $room->floor == 8 ? 'selected' : ''; ?>>Tầng 8</option>
+                    		<option value="4" <?php echo $room->floor == 9 ? 'selected' : ''; ?>>Tầng 9</option>
+                    		<option value="4" <?php echo $room->floor == 10 ? 'selected' : ''; ?>>Tầng 10</option>
                     	</select>
                     </div>
                 </div>
@@ -88,7 +95,7 @@
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group hide">
                     <label class="col-md-3 control-label">Giảm giá</label>
                     <div class="col-md-9">
                         <div class="col-xs-6 price-hour">

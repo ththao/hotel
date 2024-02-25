@@ -26,10 +26,17 @@
                     <label for="room" class="col-md-3 control-label">Tầng</label>
                     <div class="col-md-9">
                     	<select class="form-control" name="floor">
+                    		<option value="0">Tầng Trệt</option>
                     		<option value="1">Tầng 1</option>
                     		<option value="2">Tầng 2</option>
                     		<option value="3">Tầng 3</option>
                     		<option value="4">Tầng 4</option>
+                    		<option value="5">Tầng 5</option>
+                    		<option value="6">Tầng 6</option>
+                    		<option value="7">Tầng 7</option>
+                    		<option value="8">Tầng 8</option>
+                    		<option value="9">Tầng 9</option>
+                    		<option value="10">Tầng 10</option>
                     	</select>
                     </div>
                 </div>
@@ -84,7 +91,7 @@
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group hide">
                     <label class="col-md-3 control-label">Giảm giá</label>
                     <div class="col-md-9">
                         <div class="col-xs-6 price-hour">

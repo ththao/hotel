@@ -177,10 +177,10 @@ class Rent_model extends MY_Model {
     
     /**
      * Hoàng Vy + 158A
-     * @param unknown $room
-     * @param unknown $check_in
-     * @param unknown $check_out
-     * @return string[]|NULL[]|string[]|NULL[]|unknown[]|number[]
+     * @param Object $room
+     * @param integer $check_in
+     * @param integer $check_out
+     * @return array
      */
     private function calculateDayPrice($room, $check_in, $check_out) {
         $hours = ($check_out - $check_in) / 3600;
@@ -198,19 +198,15 @@ class Rent_model extends MY_Model {
             if (date('H', $check_in) >= 21 || $hours <= 12) {
                 return ['amount' => $room->night_price, 'note' => date('H:i d/m', $check_in) . ' - ' . date('H:i d/m', $check_out) . '=' . number_format($room->night_price, 0)];
             } else {
-                if ($hours <= 24) {
-                    return ['amount' => $room->daily_price, 'note' => date('H:i d/m', $check_in) . ' - ' . date('H:i d/m', $check_out) . '=' . number_format($room->daily_price, 0)];
-                } else {
-                    
-                }
+                return ['amount' => $room->daily_price, 'note' => date('H:i d/m', $check_in) . ' - ' . date('H:i d/m', $check_out) . '=' . number_format($room->daily_price, 0)];
             }
         }
     }
     
     /**
      * Hoàng Vy + 158A
-     * @param unknown $room
-     * @param unknown $hours
+     * @param Object $room
+     * @param float $hours
      * @return string[]|NULL[]|string[]|number[]
      */
     private function calculateHourlyPrice($room, $hours) {
@@ -236,6 +232,8 @@ class Rent_model extends MY_Model {
     
     public function calculatePrice($room, $rent, $data) {
         $note = '';
+        
+        // Khi có thỏa thuận thì không cần tính ngày giờ
         if ($rent->negotiate_price) {
             $data['total_price'] = $rent->negotiate_price + $data['used_items_price'] + $data['additional_fee'] - $rent->discount;
             $note = 'Giá thỏa thuận ' . $rent->negotiate_price;
@@ -244,16 +242,19 @@ class Rent_model extends MY_Model {
             
             // Hoàng Vy, 158A
             if (in_array($room->user_id, [2,3,6,7])) {
+                // Khách thuê trong ngày, hoặc dưới 24h
                 if (date('Y-m-d', $data['check_in']) == date('Y-m-d', $data['check_out']) || (($data['check_out'] - $data['check_in']) / 3600) <= 24) {
                     $hours = ($data['check_out'] - $data['check_in']) / 3600;
                     $price = $this->calculateByDays($room, $data, $hours);
                     $data['total_price'] = $price['amount'] + $data['used_items_price'] + $data['additional_fee'] - $rent->discount;
                     $note .= ($note ? ';' : '') . $price['note'];
                     
+                // Khách thuê nhiều ngày
                 } else {
                     $check_in = $data['check_in'];
                     $this_day_checkout = strtotime(date('Y-m-d', $check_in) . ' 12:00');
                     
+                    // Trường hợp khách vào trước 12h trưa
                     if ($data['check_out'] > $this_day_checkout && $check_in < $this_day_checkout) {
                         if (($this_day_checkout - $check_in) <= 3600 && ($this_day_checkout - $check_in) > 600) {
                             $data['total_price'] = (isset($data['total_price']) ? $data['total_price'] : 0) + $room->next_hourly_price;
@@ -272,6 +273,7 @@ class Rent_model extends MY_Model {
                         $check_in = $this_day_checkout;
                     }
                     
+                    // Tính tiền cho mỗi ngày vào lúc 12h trưa
                     while (true) {
                         $next_day_checkout = strtotime(date('Y-m-d', strtotime(date('Y-m-d', $check_in) . '+1 day')) . ' 12:00');
                         if ($data['check_out'] > $next_day_checkout) {
@@ -279,6 +281,7 @@ class Rent_model extends MY_Model {
                             $data['total_price'] = (isset($data['total_price']) ? $data['total_price'] : 0) + $price['amount'];
                             $note .= ($note ? ';' : '') . $price['note'];
                             
+                            // Cách tính tiền nếu khách trả phòng sau 12h trưa
                             if (in_array($room->user_id, [3,7]) && ($data['check_out'] - $next_day_checkout) > 600 && ($data['check_out'] - $next_day_checkout) <= 3600) {
                                 if ($room->user_id == 7) {
                                     $data['total_price'] += 30000;
@@ -302,7 +305,7 @@ class Rent_model extends MY_Model {
                     $data['total_price'] = $data['total_price'] + $data['used_items_price'] + $data['additional_fee'] - $rent->discount;
                 }
                 
-                // Huệ Thiên, Phú Quốc
+            // Huệ Thiên, Phú Quốc
             } else {
                 $hours = ($data['check_out'] - $data['check_in']) / 3600;
                 $threshold = ceil(($room->night_price - $room->hourly_price) / $room->next_hourly_price) + 1;
@@ -329,12 +332,15 @@ class Rent_model extends MY_Model {
             }
         }
         
+        // Giảm giá ở phần ghi chú
         if (intval($rent->discount) > 0) {
             $note .= ($note ? ';' : '') . 'Giảm giá=-' . number_format($rent->discount, 0);
         }
+        // Tính số tiền mua nước uống / mì gói / bánh kẹo
         if ($data['used_items_price']) {
             $note .= ($note ? ';' : '') . 'Nước uống=' . number_format($data['used_items_price'], 0);
         }
+        // Phụ thu dịch vụ
         if ($data['additional_fee'] && $data['fee_list']) {
             foreach ($data['fee_list'] as $fee) {
                 $note .= ($note ? ';' : '') . ($fee->notes ? $fee->notes : 'Phụ Thu') . '=' . number_format($fee->amount, 0);
@@ -350,10 +356,10 @@ class Rent_model extends MY_Model {
     
     /**
      * Huệ Thiên + Phú Quốc
-     * @param unknown $room
-     * @param unknown $data
-     * @param unknown $hours
-     * @return string[]|NULL[]|string[]|NULL[]|unknown[]|number[]|string[]|number[]
+     * @param Object $room
+     * @param array $data
+     * @param float $hours
+     * @return array
      */
     private function calculateByDays($room, $data, $hours) {
         $query = $this->db->select('*')->from('user_settings')->where('user_id', $room->user_id)->get();
@@ -409,9 +415,9 @@ class Rent_model extends MY_Model {
     
     /**
      * Huệ Thiên + Phú Quốc
-     * @param unknown $room
-     * @param unknown $hours
-     * @param unknown $settings
+     * @param Object $room
+     * @param float $hours
+     * @param Object $settings
      * @return string[]|NULL[]|string[]|number[]
      */
     private function calculateByHours($room, $hours, $settings) {

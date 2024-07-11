@@ -103,6 +103,42 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="form-group hide">
+                    <label class="col-md-3 control-label">Áp dụng giá phòng:</label>
+                    <div class="col-md-9">
+                        <div style="display: flex;">
+                        <div class="room-col room-col-1">
+                        <label><input id="apply_all_rooms" type="checkbox" style="height: 20px; width: 20px;"> Tất cả</label>
+                        </div>
+                        </div>
+                        
+                        <?php $floor = ''; ?>
+                        <?php $room_index = 1; ?>
+                        <?php $max_room_index = 1; ?>
+                        
+                        <?php foreach ($rooms as $r): ?>
+                        <?php if ($floor != '' && $floor != $r->floor) { ?>
+                        <?php $room_index = 1; ?>
+                        </div>
+                        <?php } ?>
+                        <?php if ($floor == '' || $floor != $r->floor) { ?>
+                        <div style="display: flex;">
+                        <?php } ?>
+                        
+                        <div class="room-col room-col-<?php echo $room_index; ?>">
+                        <?php if ($r->id != $room->id): ?>
+                        <label style="with: 20%;"><input class="apply_room" name="rooms[]" type="checkbox" style="height: 20px; width: 20px;" value="<?php echo $r->id; ?>"> <?php echo $r->name; ?></label>
+                        <?php endif; ?>
+                        </div>
+                        
+                        <?php $floor = $r->floor; ?>
+                        <?php $max_room_index = $max_room_index < $room_index ? $room_index : $max_room_index; ?>
+                        <?php $room_index ++; ?>
+                        <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="clear-fix"></div>
                 <div class="btn-group end-setting">
@@ -114,3 +150,23 @@
     </div>
 </div>
 <!--End content-->
+
+<script>
+$(document).ready(function() {
+    $('.room-col').css('width', '<?php echo (100/$max_room_index) . '%'; ?>');
+	$(document).on('click', '#apply_all_rooms', function() {
+		if ($(this).is(':checked')) {
+		    $('.apply_room').prop('checked', true);
+		} else {
+		    $('.apply_room').prop('checked', false);
+		}
+	});
+	$(document).on('click', '.apply_room', function() {
+		if ($(this).is(':checked') && $('.apply_room').length == $('.apply_room:checked').length) {
+		    $('#apply_all_rooms').prop('checked', true);
+		} else {
+		    $('#apply_all_rooms').prop('checked', false);
+		}
+	});
+});
+</script>

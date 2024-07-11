@@ -11,9 +11,12 @@
 <div id="content">
     <div class="container-fluid">
         <div class="row col-md-12 floor">
-            <a href="/room" class="col-xs-12 col-md-4 manage-item">PHÒNG</a>
-            <a href="/item" class="col-xs-12 col-md-4 manage-item">NƯỚC</a>
-            <a href="/paid" class="col-xs-12 col-md-4 manage-item">CHI PHÍ</a>
+            <a href="/room" class="col-xs-12 col-md-6 manage-item">PHÒNG</a>
+            <a href="/room/prices" class="col-xs-12 col-md-6 manage-item">CẬP NHẬT GIÁ PHÒNG</a>
+		</div>
+        <div class="row col-md-12 floor">
+            <a href="/item" class="col-xs-12 col-md-6 manage-item">NƯỚC</a>
+            <a href="/paid" class="col-xs-12 col-md-6 manage-item">CHI PHÍ</a>
 		</div>
 		
 		<?php if ($report_enable): ?>
@@ -34,8 +37,8 @@
 		
 		<?php if ($this->session->has_userdata('user_id') && $this->session->userdata('user_id') == 1 && $this->session->userdata('logged_in') == 1): ?>
         	<div class="row col-md-12 floor">
-            	<a href="/remember" class="col-xs-12 col-md-4 manage-item">QUẢN LÝ ĐĂNG NHẬP</a>
-            	<a href="/user" class="col-xs-12 col-md-4 manage-item">QUẢN LÝ ACCOUNTS</a>
+            	<a href="/remember" class="col-xs-12 col-md-6 manage-item">QUẢN LÝ ĐĂNG NHẬP</a>
+            	<a href="/user" class="col-xs-12 col-md-6 manage-item">QUẢN LÝ ACCOUNTS</a>
         	</div>
         <?php endif; ?>
     </div>

@@ -35,6 +35,23 @@ class Room extends My_Controller {
         $this->render('room/create');
     }
     
+    public function prices()
+    {   
+        $rooms = $this->room_model->findAll(array('user_id' => $this->session->userdata('user_id')));
+        $res = ['rooms' => $rooms];
+        if ($data = $this->input->post()) {
+            if (isset($data['rooms']) && isset($data['price_name']) && $data['price_name'] && isset($data['new_price']) && $data['new_price']) {
+                $this->db->where('user_id', $this->session->userdata('user_id'));
+                $this->db->where_in('id', $data['rooms']);
+                $this->db->update('room', [$data['price_name'] => $data['new_price']]);
+                
+                $res['message'] = 'Đã cập nhật giá thành công';
+            }
+        }
+        
+        $this->render('room/prices', $res);
+    }
+    
     public function update($id)
     {
         if (!$id) {
@@ -46,11 +63,23 @@ class Room extends My_Controller {
         }
         
         if ($data = $this->input->post()) {
+            /*if (isset($data['rooms'])) {
+                $this->db->where('user_id', $this->session->userdata('user_id'));
+                $this->db->where_in('id', $data['rooms']);
+                $this->db->update('room', [
+                    'hourly_price' => $data['hourly_price'],
+                    'next_hourly_price' => $data['next_hourly_price'],
+                    'night_price' => $data['night_price'],
+                    'daily_price' => $data['daily_price']
+                ]);
+                unset($data['rooms']);
+            }*/
             $this->room_model->update($room->id, $data);
         }
         
         $room = $this->room_model->findOne(array('id' => $id, 'user_id' => $this->session->userdata('user_id')));
-        $this->render('room/update', array('room' => $room));
+        $rooms = $this->room_model->findAll(array('user_id' => $this->session->userdata('user_id')));
+        $this->render('room/update', array('room' => $room, 'rooms' => $rooms));
     }
     
     public function delete($id)

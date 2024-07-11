@@ -17,6 +17,100 @@ class Lottery extends My_Controller {
         $this->layout('layout/main_bds');
     }
     
+    public function reverse_pair()
+    {
+        $this->db->select('lottery_data.import_date, lottery_data.numbers')->from('lottery_data')
+            ->join('lottery_channel', 'lottery_channel.id = lottery_data.lottery_channel_id')
+            ->where('lottery_channel.position IN (1,2)', null)
+            ->order_by('lottery_data.import_date DESC')->limit(730);
+            
+        if (isset($_GET['c'])) {
+            $this->db->where('lottery_channel.channel_area', $_GET['c']);
+        } else {
+            $this->db->where('lottery_channel.channel_area', 'MN');
+        }
+        $query = $this->db->get();
+        $result = $query->result();
+        
+        $data = [];
+        if ($result) {
+            $day_data = [];
+            foreach ($result as $item) {
+                $numbers = explode(' ', $item->numbers);
+                foreach ($numbers as $number) {
+                    $day_data[$item->import_date][$number % 100] = $number % 100;
+                }
+            }
+            
+            foreach ($day_data as $date => $day_numbers) {
+                $data[$date . ' (' . date('N', strtotime($date)) . ')'] = [];
+                foreach ($day_numbers as $num1) {
+                    foreach ($day_numbers as $num2) {
+                        if ($num1%10 == floor($num2/10) && $num2%10 == floor($num1/10) && $num1 < $num2) {
+                            if (isset($_GET['n'])) {
+                                if (floor($num1/10) == $_GET['n'] || floor($num2/10) == $_GET['n']) {
+                                    $data[$date . ' (' . date('N', strtotime($date)) . ')'][] = $num1 . '-' . $num2;
+                                }
+                            } else {
+                                $data[$date . ' (' . date('N', strtotime($date)) . ')'][] = $num1 . '-' . $num2;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        echo '<pre>';
+        print_r($data);
+    }
+    
+    public function pair()
+    {
+        $this->db->select('lottery_data.import_date, lottery_data.numbers')->from('lottery_data')
+            ->join('lottery_channel', 'lottery_channel.id = lottery_data.lottery_channel_id')
+            ->where('lottery_channel.channel_area', 'MN')
+            ->order_by('lottery_data.import_date DESC')->limit(730);
+        $query = $this->db->get();
+        $result = $query->result();
+        
+        $data = [];
+        if ($result) {
+            $day_data = [];
+            foreach ($result as $item) {
+                $numbers = explode(' ', $item->numbers);
+                foreach ($numbers as $number) {
+                    $day_data[$item->import_date][$number % 100] = $number % 100;
+                }
+            }
+            
+            foreach ($day_data as $date => $day_numbers) {
+                foreach ($day_numbers as $num1) {
+                    foreach ($day_numbers as $num2) {
+                        if ($num1 != $num2 && $num1 < $num2) {
+                            if (!isset($data[$num1 . '-' . $num2])) {
+                                $data[$num1 . '-' . $num2] = [];
+                            }
+                            
+                            $data[$num1 . '-' . $num2][] = $date;
+                        }
+                    }
+                }
+            }
+        }
+        
+        echo '<pre>';
+        print_r($data);
+        
+        $count_data = [];
+        foreach ($data as $pair => $days) {
+            $count_data[$pair] = count($days);
+        }
+        
+        
+        echo '<pre>';
+        print_r($count_data);
+    }
+    
     public function days()
     {
         set_time_limit(0);
@@ -373,6 +467,134 @@ class Lottery extends My_Controller {
                 }
             }
         }
+    }
+    
+    public function delay()
+    {
+        $this->db->select('*')->from('lottery_forecast');
+        $this->db->where('view_date <= "' . date('Y-m-d' . '"'), null);
+	    $this->db->order_by('view_date DESC');
+	    $this->db->limit(isset($_GET['limit']) ? $_GET['limit'] : 30);
+        $query = $this->db->get();
+        $result = $query->result_array();
+        
+        $data = [];
+        if ($result) {
+            foreach ($result as $item) {
+                if (isset($_GET['v']) && $_GET['v'] == 'sm1') {
+                    $forcast_numbers = $item['mn_m_1'];
+                } else if (isset($_GET['v']) && $_GET['v'] == 'sw1') {
+                    $forcast_numbers = $item['mn_w_1'];
+                } else if (isset($_GET['v']) && $_GET['v'] == 'sy1') {
+                    $forcast_numbers = $item['mn_y_1'];
+                } else if (isset($_GET['v']) && $_GET['v'] == 'sm2') {
+                    $forcast_numbers = $item['mn_m_2'];
+                } else if (isset($_GET['v']) && $_GET['v'] == 'sy2') {
+                    $forcast_numbers = $item['mn_y_2'];
+                } else if (isset($_GET['v']) && $_GET['v'] == 'sw2') {
+                    $forcast_numbers = $item['mn_w_2'];
+                } else if (isset($_GET['v']) && $_GET['v'] == 'mm1') {
+                    $forcast_numbers = $item['mt_m_1'];
+                } else if (isset($_GET['v']) && $_GET['v'] == 'mw1') {
+                    $forcast_numbers = $item['mt_w_1'];
+                } else if (isset($_GET['v']) && $_GET['v'] == 'my1') {
+                    $forcast_numbers = $item['mt_y_1'];
+                } else if (isset($_GET['v']) && $_GET['v'] == 'mm2') {
+                    $forcast_numbers = $item['mt_m_2'];
+                } else if (isset($_GET['v']) && $_GET['v'] == 'my2') {
+                    $forcast_numbers = $item['mt_y_2'];
+                } else if (isset($_GET['v']) && $_GET['v'] == 'mw2') {
+                    $forcast_numbers = $item['mt_w_2'];
+                }
+                
+                if ($forcast_numbers) {
+                    $week_numbers = explode(',', $forcast_numbers);
+                    $week_number = $week_numbers[isset($_GET['pos']) ? $_GET['pos'] : 2];
+                    
+                    $data[$item['view_date']] = ['number' => $week_number, 'correct_date' => 0, 'next_date' => 0, 'prev_date' => 0];
+                    
+                    $this->db->select('lottery_data.numbers, lottery_data.import_date')->from('lottery_data');
+            	    $this->db->join('lottery_channel', 'lottery_channel.id = lottery_data.lottery_channel_id', 'INNER');
+            	    if (in_array($_GET['v'], ['sw1', 'sm1', 'sy1', 'sw2', 'sm2', 'sy2'])) {
+            	        $this->db->where('lottery_channel.channel_area', 'MN');
+            	    } else {
+            	        $this->db->where('lottery_channel.channel_area', 'MT');
+            	    }
+            	    $this->db->where('lottery_data.import_date = "' . $item['view_date'] . '"', null);
+            	    $this->db->where('lottery_channel.position IN (1,2)', null);
+                    $query = $this->db->get();
+            	    $rows = $query->result();
+            	    
+            	    if ($rows) {
+            	        foreach ($rows as $row) {
+            	            $numbers = explode(' ', $row->numbers);
+            	            if ($numbers) {
+            	                foreach ($numbers as $number) {
+            	                    if ($week_number == $number%100) {
+            	                        $data[$item['view_date']]['correct_date'] = 1;
+            	                        break;
+            	                    }
+            	                }
+            	            }
+            	        }
+            	    }
+            	    
+            	    $this->db->select('lottery_data.numbers, lottery_data.import_date')->from('lottery_data');
+            	    $this->db->join('lottery_channel', 'lottery_channel.id = lottery_data.lottery_channel_id', 'INNER');
+            	    if (in_array($_GET['v'], ['sw1', 'sm1', 'sy1', 'sw2', 'sm2', 'sy2'])) {
+            	        $this->db->where('lottery_channel.channel_area', 'MN');
+            	    } else {
+            	        $this->db->where('lottery_channel.channel_area', 'MT');
+            	    }
+            	    $this->db->where('lottery_data.import_date = "' . date('Y-m-d', strtotime($item['view_date'] . '+1 days')) . '"', null);
+            	    $this->db->where('lottery_channel.position IN (1,2)', null);
+                    $query = $this->db->get();
+            	    $rows = $query->result();
+            	    
+            	    if ($rows) {
+            	        foreach ($rows as $row) {
+            	            $numbers = explode(' ', $row->numbers);
+            	            if ($numbers) {
+            	                foreach ($numbers as $number) {
+            	                    if ($week_number == $number%100) {
+            	                        $data[$item['view_date']]['next_date'] = 1;
+            	                        break;
+            	                    }
+            	                }
+            	            }
+            	        }
+            	    }
+            	    
+            	    $this->db->select('lottery_data.numbers, lottery_data.import_date')->from('lottery_data');
+            	    $this->db->join('lottery_channel', 'lottery_channel.id = lottery_data.lottery_channel_id', 'INNER');
+            	    if (in_array($_GET['v'], ['sw1', 'sm1', 'sy1', 'sw2', 'sm2', 'sy2'])) {
+            	        $this->db->where('lottery_channel.channel_area', 'MN');
+            	    } else {
+            	        $this->db->where('lottery_channel.channel_area', 'MT');
+            	    }
+            	    $this->db->where('lottery_data.import_date = "' . date('Y-m-d', strtotime($item['view_date'] . '-1 days')) . '"', null);
+            	    $this->db->where('lottery_channel.position IN (1,2)', null);
+                    $query = $this->db->get();
+            	    $rows = $query->result();
+            	    
+            	    if ($rows) {
+            	        foreach ($rows as $row) {
+            	            $numbers = explode(' ', $row->numbers);
+            	            if ($numbers) {
+            	                foreach ($numbers as $number) {
+            	                    if ($week_number == $number%100) {
+            	                        $data[$item['view_date']]['prev_date'] = 1;
+            	                        break;
+            	                    }
+            	                }
+            	            }
+            	        }
+            	    }
+                }
+            }
+        }
+        
+        $this->render('lottery/delay', ['data' => $data]);
     }
     
     public function all()

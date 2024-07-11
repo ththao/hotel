@@ -96,7 +96,7 @@ td {
     			            <?php endif; ?>
             				<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
             				<?php foreach ($daily_date as $date): ?>
-            					<td style="<?php echo (!isset($_GET['lottery_channel_id']) || !$_GET['lottery_channel_id']) && date('w', strtotime($date)) == date('w') ? 'background: #ffbf00;' : ''; ?>">
+            					<td style="<?php echo (!isset($_GET['lottery_channel_id']) || !$_GET['lottery_channel_id']) && date('w', strtotime($date)) == date('w') ? 'background: #A3B0B8;' : ''; ?>">
             					    <?php if (isset($item[$date]) && $item[$date]): ?>
                 					    <?php if (is_numeric($number)): ?>
                 					        <span style="color: #ff00ff; font-weight: bold;"><?php echo $item[$date]; ?></span>

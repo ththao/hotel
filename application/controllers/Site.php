@@ -69,6 +69,9 @@ class Site extends My_Controller {
 	
 	public function backup()
 	{
+	    if ($this->session->userdata('user_id') != 1) {
+	        redirect('/site');
+	    }
 	    try {
     	    $this->db->select('rent.*, users.name AS hotel_name');
     	    $this->db->from('rent');

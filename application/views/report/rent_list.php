@@ -12,6 +12,8 @@
                     <span><img src="../../../../images/back.png"> Quay Lại</span>
                 </a>
             <?php } ?>
+            
+            <a href="#" class="btn btn-success btn-download-excel" style="">Tải Excel</a>
         </div>
     	<form method="get" action="/report/rent_list" class="submit-form">
             <div class="dropdown-select" style="float: right; width: 85px;">
@@ -59,7 +61,7 @@
                 <th style="width: 10%;">CMND</th>
                 <th style="width: 30%;">Địa Chỉ</th>
                 <th style="width: 4%;">Phòng</th>
-            	<?php if ($this->session->userdata('logged_in')): ?>
+            	<?php if (false): ?>
                 	<th style="width: 5%;"></th>
             	<?php endif; ?>
             </tr>
@@ -73,7 +75,7 @@
                     <td><?php echo $item->number; ?></td>
                     <td><?php echo $item->address; ?></td>
                     <td><?php echo $item->room; ?></td>
-                	<?php if ($this->session->userdata('logged_in')): ?>
+                	<?php if (false): ?>
                         <td>
                         	<a class="btn-remove" href="/report/remove/<?php echo $item->id; ?>">Xóa</a>
                     		<a class="btn-change" href="/report/change/<?php echo $item->id; ?>">Đổi</a>
@@ -95,7 +97,7 @@
                 <th style="width: 10%;">CMND</th>
                 <th style="width: 30%;">Địa Chỉ</th>
                 <th style="width: 4%;">Phòng</th>
-            	<?php if ($this->session->userdata('logged_in')): ?>
+            	<?php if (false): ?>
                 	<th style="width: 5%;"></th>
             	<?php endif; ?>
             </tr>
@@ -109,7 +111,7 @@
                     <td><?php echo $item->number; ?></td>
                     <td><?php echo $item->address; ?></td>
                     <td><?php echo $item->room; ?></td>
-                	<?php if ($this->session->userdata('logged_in')): ?>
+                	<?php if (false): ?>
                         <td>
                         	<a class="btn-remove" href="/report/remove/<?php echo $item->id; ?>">Xóa</a>
                     		<a class="btn-change" href="/report/change/<?php echo $item->id; ?>">Đổi</a>
@@ -156,6 +158,16 @@ $(document).ready(function() {
             	window.location.reload();
             }
         });
+	});
+	
+	$(".btn-download-excel").click(function(e) {
+		e.preventDefault();
+
+		var win = window.open('/report/download_excel?y=' + $('#years').val() + '&m=' + $('#month').val(), '_blank');
+		if (win) {
+		    //Browser has allowed it to be opened
+		    win.focus();
+		}
 	});
 });
 </script>

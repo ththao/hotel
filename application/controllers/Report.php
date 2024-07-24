@@ -78,12 +78,12 @@ class Report extends My_Controller {
             $month = date("m");
             $year = date("Y");
         }
-        $data = $this->getRentList($year, $month, $date);
+        $data = $this->getRentList($year, $month, $date, 0);
          
         $this->render('report/rent_list', array_merge($data, array('date' => $date, 'month' => $month, 'year' => $year)));
 	}
 	
-	private function getRentList($year, $month, $date)
+	private function getRentList($year, $month, $date, $tax = 0)
 	{
 	    $year = $year ? $year : date('Y');
 	    $month = $month ? $month : date('m');
@@ -96,14 +96,15 @@ class Report extends My_Controller {
 	        $end = strtotime($year . '-' . $month . '-' . $t . ' 23:59:59');
 	    }
 	    
-	    $query = $this->db->query('
-	        SELECT rent.id AS rent_id, rent.hourly, room.name AS room_name, room.hourly_price, room.night_price, rent.check_in
+	    $sql = '
+	        SELECT rent.id AS rent_id, rent.hourly, room.name AS room_name, room.hourly_price, room.night_price, rent.check_in, rent.check_out, rent.total_price
             FROM rent
             INNER JOIN room ON room.id = rent.room_id
-	        WHERE rent.user_id = ' . $this->session->userdata('user_id') . ' 
-                AND ((rent.check_in >= ' . $start . ' AND rent.check_in <= ' . $end . ') OR (rent.check_in <= ' . $end . ' AND rent.check_out IS NULL))
-    		ORDER BY rent.check_in'
-        );
+	        WHERE rent.user_id = ' . $this->session->userdata('user_id') . ' AND (rent.check_out IS NOT NULL AND rent.check_out >= ' . $start . ' AND rent.check_out <= ' . $end . ')' . '
+    		ORDER BY rent.check_in
+	    ';
+	    
+	    $query = $this->db->query($sql);
 	    $data = $query->result();
 	    
 	    if ($data) {
@@ -122,6 +123,8 @@ class Report extends My_Controller {
                             'rent_id' => $row->rent_id,
                             'room' => $row->room_name,
                             'rent_date' => date('Y-m-d', strtotime($year . '-' . $month . '-' . $date)),
+                            'check_in' => $row->check_in,
+                            'check_out' => $row->check_out ? $row->check_out : null,
                             'card_id' => $received_item->card_id
                         );
                         
@@ -131,17 +134,17 @@ class Report extends My_Controller {
         	                'card_id' => $received_item->card_id
         	            ));
         	            if ($report_item) {
-        	                if (!$report_item->unit_price || !$report_item->price) {
+        	                if ($tax) {
         	                    $fields['night'] = $report_item->night ? 1 : 0;
-        	                    $fields = $this->generatePrice($fields, $row->night_price, $row->hourly_price);
+        	                    $fields = $this->generatePrice($fields, $row->total_price, $row->night_price, $row->hourly_price);
         	                }
         	                $this->report_model->update($report_item->id, $fields);
     	                } else {
-    	                    //if (time() >= strtotime($year . '-' . $month . '-' . $date . ' 20:30')) {
-        	                    $fields['night'] = $night;
-        	                    $fields = $this->generatePrice($fields, $row->night_price, $row->hourly_price);
-        	                    $this->report_model->save($fields);
-    	                    //}
+    	                    $fields['night'] = $night;
+        	                if ($tax) {
+    	                        $fields = $this->generatePrice($fields, $row->total_price, $row->night_price, $row->hourly_price);
+        	                }
+    	                    $this->report_model->save($fields);
     	                }
                     }
 	            }
@@ -166,10 +169,8 @@ class Report extends My_Controller {
 	    }
 	    
         $this->db->select('
-            report.id, report.room, report.rent_date, report.unit, 
-            report.unit_price, report.price, report.night, report.remove,
-            card.type, card.name, card.number,
-            card.nation, card.birthday, card.address, card.gender
+            report.id, report.room, report.rent_date, report.unit, report.unit_price, report.price, report.night, report.remove, 
+            report.check_in, report.check_out, card.type, card.name, card.number, card.nation, card.birthday, card.address, card.gender
         ');
 		$this->db->from('report');
 		$this->db->join('card', 'card.id = report.card_id', 'INNER');
@@ -179,20 +180,17 @@ class Report extends My_Controller {
         return $query->result();
 	}
 	
-	private function generatePrice($fields, $night_price, $hourly_price)
+	private function generatePrice($fields, $total_price, $night_price, $hourly_price)
 	{
 	    if ($fields['night']) {
-	        $fields['price'] = 150000;
-	        $fields['unit_price'] = 150000;
+	        $fields['price'] = $total_price;
+	        $fields['unit_price'] = $night_price;
 	        $fields['unit'] = 1;
 	        $fields['tax_report'] = 1;
 	    } else {
-	        $hour_prices = array(0 => 50000, 1 => 75000, 2 => 100000);
-	        $hour_unit = array(0 => 1, 1 => 1.5, 2 => 2);
-	        $index = rand(0, 2);
-	        $fields['price'] = $hour_prices[$index];
+	        $fields['price'] = $total_price;
 	        $fields['unit_price'] = $hourly_price;
-	        $fields['unit'] = $hour_unit[$index];
+	        $fields['unit'] = 1;
 	        $fields['tax_report'] = 1;
 	    }
 	    
@@ -213,6 +211,95 @@ class Report extends My_Controller {
 	    
 	    $this->render('report/tax');
 	}
+	
+	public function download_excel()
+	{
+        $date = $this->input->get('date') ? $this->input->get('date') : date('d');
+        $month = $this->input->get('month') ? $this->input->get('month') : date('m');
+        $year = $this->input->get('year') ? $this->input->get('year') : date('Y');
+        
+	    $hourly_list = $this->getReportList($year, $month, $date, 0);
+	    $nightly_list = $this->getReportList($year, $month, $date, 1);
+	    
+	    $csv_data[] = [mb_convert_encoding('Lưu trú giờ', 'UTF-8')];
+	    $csv_data[] = ['STT', mb_convert_encoding('Họ Tên', 'UTF-8'), mb_convert_encoding('Nam/Nữ', 'UTF-8'), mb_convert_encoding('Năm Sinh', 'UTF-8'), mb_convert_encoding('Dân Tộc', 'UTF-8'), 'CCCD', mb_convert_encoding('Địa Chỉ', 'UTF-8'), mb_convert_encoding('Đến', 'UTF-8'), mb_convert_encoding('Đi', 'UTF-8'), mb_convert_encoding('Phòng', 'UTF-8')];
+	    foreach($hourly_list as $index => $item) {
+            $csv_data[] = [
+                $index + 1,
+                mb_convert_encoding($item->name, 'UTF-8'),
+                mb_convert_encoding($item->gender == 1 ? 'Nam' : 'Nữ', 'UTF-8'),
+                mb_convert_encoding($item->birthday, 'UTF-8'),
+                mb_convert_encoding($item->nation, 'UTF-8'),
+                mb_convert_encoding($item->number, 'UTF-8'),
+                mb_convert_encoding($item->address, 'UTF-8'),
+                $item->check_in ? date('H:i d/m/Y', $item->check_in) : '',
+                $item->check_out ? date('H:i d/m/Y', $item->check_out) : '',
+                mb_convert_encoding($item->room, 'UTF-8')
+            ];
+        }
+        
+        $csv_data[] = [''];
+        $csv_data[] = [mb_convert_encoding('Lưu trú qua đêm', 'UTF-8')];
+	    $csv_data[] = ['STT', mb_convert_encoding('Họ Tên', 'UTF-8'), mb_convert_encoding('Nam/Nữ', 'UTF-8'), mb_convert_encoding('Năm Sinh', 'UTF-8'), mb_convert_encoding('Dân Tộc', 'UTF-8'), 'CCCD', mb_convert_encoding('Địa Chỉ', 'UTF-8'), mb_convert_encoding('Đến', 'UTF-8'), mb_convert_encoding('Đi', 'UTF-8'), mb_convert_encoding('Phòng', 'UTF-8')];
+	    foreach($nightly_list as $index => $item) {
+            $csv_data[] = [
+                $index + 1,
+                mb_convert_encoding($item->name, 'UTF-8'),
+                mb_convert_encoding($item->gender == 1 ? 'Nam' : 'Nữ', 'UTF-8'),
+                mb_convert_encoding($item->birthday, 'UTF-8'),
+                mb_convert_encoding($item->nation, 'UTF-8'),
+                mb_convert_encoding($item->number, 'UTF-8'),
+                mb_convert_encoding($item->address, 'UTF-8'),
+                $item->check_in ? date('H:i d/m/Y', $item->check_in) : '',
+                $item->check_out ? date('H:i d/m/Y', $item->check_out) : '',
+                mb_convert_encoding($item->room, 'UTF-8')
+            ];
+        }
+        $this->array_to_csv_download($csv_data, "Lưu_trú_" . date('Y_m_d') . ".csv", ",");
+	}
+	
+	private function array_to_csv_download($array, $filename = "export.csv", $delimiter=",") {
+        ob_start();
+        header('Content-Type: application/csv');
+        header('Content-Disposition: attachment; filename="'.$filename.'";');
+        
+        // open the "output" stream
+        $f = fopen('php://output', 'w');
+        foreach ($array as $line) {
+            $l = $this->arrayToCsv($line, $delimiter, '"', true, false);
+            
+            fwrite($f, $l.PHP_EOL);
+        }
+        //to get content length for download progress on frontend
+        register_shutdown_function(function() {
+            header('Content-Length: ' . ob_get_length());
+            ob_end_flush();
+        });
+    }
+    
+    private function arrayToCsv(array &$fields, $delimiter = ',', $enclosure = '"', $encloseAll = false, $nullToMysqlNull = false )
+    {
+        $delimiter_esc = preg_quote($delimiter, '/');
+        $enclosure_esc = preg_quote($enclosure, '/');
+        
+        $output = array();
+        foreach ( $fields as $field ) {
+            if ($field === null && $nullToMysqlNull) {
+                $output[] = 'NULL';
+                continue;
+            }
+            
+            // Enclose fields containing $delimiter, $enclosure or whitespace
+            if ( $encloseAll || preg_match( "/(?:${delimiter_esc}|${enclosure_esc}|\s)/", $field ) ) {
+                $output[] = $enclosure . str_replace($enclosure, $enclosure . $enclosure, $field) . $enclosure;
+            }
+            else {
+                $output[] = $field;
+            }
+        }
+        
+        return implode( $delimiter, $output );
+    }
 	
 	public function download()
 	{
@@ -236,6 +323,8 @@ class Report extends My_Controller {
 	    } else {
 	        $t = date('t', strtotime($y . '-' . $m));
 	    }
+	    
+	    $this->getRentList($y, $m, date('d'), 1);
         
 	    $this->db->select('
             report.id, report.rent_id, report.room, report.rent_date, report.unit,

@@ -1186,9 +1186,14 @@ function onBarcodeReady (barcodeResult) {
 	for (var i = 0; i < barcodeResult.length; ++i) {
         var sBarcode = DSScanner.bin2String(barcodeResult[i]);
         if (sBarcode) {
+            console.log(sBarcode)
         	var cccd = sBarcode.split('|');
         	
-        	$('#idCardModal .txt-number').val(cccd[0]);
+        	var number = cccd[0];
+        	if (number.length > 12) {
+        	    number = number.substring(number.length - 12);
+        	}
+        	$('#idCardModal .txt-number').val(number);
         	$('#idCardModal .txt-name').val(cccd[2]);
         	$('#idCardModal .txt-address').val(cccd[5]);
         	var birthday = cccd[3];

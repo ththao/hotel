@@ -177,10 +177,10 @@ class Rent_model extends MY_Model {
     
     /**
      * Hoàng Vy + 158A
-     * @param unknown $room
-     * @param unknown $check_in
-     * @param unknown $check_out
-     * @return string[]|NULL[]|string[]|NULL[]|unknown[]|number[]
+     * @param $room
+     * @param $check_in
+     * @param $check_out
+     * @return array
      */
     private function calculateDayPrice($room, $check_in, $check_out) {
         $hours = ($check_out - $check_in) / 3600;
@@ -211,9 +211,9 @@ class Rent_model extends MY_Model {
     
     /**
      * Hoàng Vy + 158A
-     * @param unknown $room
-     * @param unknown $hours
-     * @return string[]|NULL[]|string[]|number[]
+     * @param $room
+     * @param $hours
+     * @return array
      */
     private function calculateHourlyPrice($room, $hours) {
         $price = $room->hourly_price;
@@ -245,7 +245,7 @@ class Rent_model extends MY_Model {
         } else {
             
             // Hoàng Vy, 158A
-            if (in_array($room->user_id, [1,2,3,6,7])) {
+            if (in_array($room->user_id, [1,3,7])) {
                 // Dưới 24hrs thì tính theo giờ hoặc qua đêm
                 if (date('Y-m-d', $data['check_in']) == date('Y-m-d', $data['check_out']) || (($data['check_out'] - $data['check_in']) / 3600) <= 24) {
                     
@@ -266,7 +266,7 @@ class Rent_model extends MY_Model {
                             if (floor($hours - 1) > 0) {
                                 $price += $room->next_hourly_price * floor($hours - 1);
                             }
-                            if ($hours - floor($hours) > ($settings->full_hour_minutes / 60)) {
+                            if ($hours - floor($hours) >= ($settings->full_hour_minutes / 60)) {
                                 $price += $room->next_hourly_price;
                             } else if ($hours - floor($hours) > ($settings->half_hour_minutes / 60)) {
                                 $price += $room->next_hourly_price/2;
@@ -279,7 +279,7 @@ class Rent_model extends MY_Model {
                     // Các trường hợp khác tính bình thường
                     } else if (in_array($room->user_id, [3,6,7])) {
                         $price = $this->calculateDayPrice($room, $data['check_in'], $data['check_out']);
-                        $data['total_price'] = (isset($data['total_price']) ? $data['total_price'] : 0) + $price['amount'];
+                        $data['total_price'] = (isset($data['total_price']) ? $data['total_price'] : 0) + $price['amount'] + $data['used_items_price'] + $data['additional_fee'] - $rent->discount;
                         $note .= ($note ? ';' : '') . $price['note'];
                     } else {
                         $hours = ($data['check_out'] - $data['check_in']) / 3600;
@@ -341,8 +341,8 @@ class Rent_model extends MY_Model {
                     $data['total_price'] = $data['total_price'] + $data['used_items_price'] + $data['additional_fee'] - $rent->discount;
                 }
                 
-            // Huệ Thiên, Phú Quốc
-            } else {
+            // Huệ Thiên, Phú Quốc, Victoria
+            } else if (in_array($room->user_id, [2,5,6])) {
                 $hours = ($data['check_out'] - $data['check_in']) / 3600;
                 $threshold = ceil(($room->night_price - $room->hourly_price) / $room->next_hourly_price) + 1;
                 
@@ -389,10 +389,10 @@ class Rent_model extends MY_Model {
     
     /**
      * Huệ Thiên + Phú Quốc
-     * @param unknown $room
-     * @param unknown $data
-     * @param unknown $hours
-     * @return string[]|NULL[]|string[]|NULL[]|unknown[]|number[]|string[]|number[]
+     * @param $room
+     * @param $data
+     * @param $hours
+     * @return array
      */
     private function calculateByDays($room, $data, $hours) {
         $query = $this->db->select('*')->from('user_settings')->where('user_id', $room->user_id)->get();
@@ -453,10 +453,10 @@ class Rent_model extends MY_Model {
     
     /**
      * Huệ Thiên + Phú Quốc
-     * @param unknown $room
-     * @param unknown $hours
-     * @param unknown $settings
-     * @return string[]|NULL[]|string[]|number[]
+     * @param $room
+     * @param $hours
+     * @param $settings
+     * @return array
      */
     private function calculateByHours($room, $hours, $settings) {
         

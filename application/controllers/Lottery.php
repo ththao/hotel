@@ -1031,6 +1031,9 @@ class Lottery extends My_Controller {
             if ($current_pn) {
                 $invert_current_pn = [];
                 foreach ($current_pn as $pn) {
+                    if (!is_numeric($pn)) {
+                        continue;
+                    }
                     $invert_pn = 10*($pn%10) + intdiv($pn, 10);
                     $invert_current_pn[] = $invert_pn;
                     foreach ($numbers as $number) {
@@ -2484,6 +2487,9 @@ class Lottery extends My_Controller {
 	        return $a['count'] <= $b['count'];
 	    });
 	    
+	    if (!$result) {
+	        return [];
+	    }
         $count = $result[0]['count'];
         $potential_numbers = [];
         

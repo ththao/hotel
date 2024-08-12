@@ -529,7 +529,7 @@ class Rent_model extends MY_Model {
         // Nếu chọn giá thỏa thuận thì chỉ tính theo giá đã thỏa thuận
         if ($rent->negotiate_price) {
             $data['total_price'] = $rent->negotiate_price + $data['used_items_price']; // + $data['additional_fee'] - $rent->discount;
-            $note = 'Giá thỏa thuận=' . $rent->negotiate_price;
+            $note = 'Giá thỏa thuận=' . number_format($rent->negotiate_price, 0);
             
         } else {
             
@@ -537,11 +537,11 @@ class Rent_model extends MY_Model {
             if (in_array($room->user_id, [3,7])) {
                 $res = $this->calculatePrice158A($room, $data, $rent, $note);
                 
-                // Victoria
-            } else if (in_array($room->user_id, [1, 6])) {
+            // Victoria
+            } else if (in_array($room->user_id, [6])) {
                 $res = $this->calculatePriceVictoria($room, $data, $rent, $note);
                 
-                // Huệ Thiên, Phú Quốc, Victoria
+            // Huệ Thiên, Phú Quốc
             } else if (in_array($room->user_id, [1,2,5])) {
                 $res = $this->calculatePriceHueThien($room, $data, $rent, $note);
             }

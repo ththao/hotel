@@ -14,13 +14,24 @@ class Rent_model extends MY_Model {
     {
         $year = $year ? $year : date('Y');
         $month = $month ? $month : date('m');
-        if ($date) {
-            $start = strtotime($year . '-' . $month . '-' . $date . ' 00:00:00');
-            $end = strtotime($year . '-' . $month . '-' . $date . ' 23:59:59');
+        if ($this->session->userdata('user_id') == 6) {
+            if ($date) {
+                $start = strtotime($year . '-' . $month . '-' . $date . ' 12:00:00 -1 days');
+                $end = strtotime($year . '-' . $month . '-' . $date . ' 12:00:00');
+            } else {
+                $start = strtotime($year . '-' . $month . '-01 00:00:00');
+                $t = date('t', strtotime($year . '-' . $month));
+                $end = strtotime($year . '-' . $month . '-' . $t . ' 23:59:59');
+            }
         } else {
-            $start = strtotime($year . '-' . $month . '-01 00:00:00');
-            $t = date('t', strtotime($year . '-' . $month));
-            $end = strtotime($year . '-' . $month . '-' . $t . ' 23:59:59');
+            if ($date) {
+                $start = strtotime($year . '-' . $month . '-' . $date . ' 00:00:00');
+                $end = strtotime($year . '-' . $month . '-' . $date . ' 23:59:59');
+            } else {
+                $start = strtotime($year . '-' . $month . '-01 00:00:00');
+                $t = date('t', strtotime($year . '-' . $month));
+                $end = strtotime($year . '-' . $month . '-' . $t . ' 23:59:59');
+            }
         }
         
         $query = $this->db->query('
